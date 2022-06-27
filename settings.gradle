@@ -4,4 +4,4 @@ pluginManagement {
 		gradlePluginPortal()
 	}
 }
-rootProject.name = 'rest-service'
+rootProject.name = 'waffle-cone'

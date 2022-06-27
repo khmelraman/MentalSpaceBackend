@@ -1,4 +1,4 @@
-package com.example.restservice;
+package dev.mentalspace.wafflecone;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

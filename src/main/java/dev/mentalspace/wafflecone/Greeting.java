@@ -1,4 +1,4 @@
-package com.example.restservice;
+package dev.mentalspace.wafflecone;
 
 public class Greeting {
 

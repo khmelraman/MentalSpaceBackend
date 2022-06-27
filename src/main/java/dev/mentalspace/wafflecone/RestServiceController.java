@@ -1,4 +1,4 @@
-package com.example.restservice;
+package dev.mentalspace.wafflecone;
 
 import java.util.concurrent.atomic.AtomicLong;
 
