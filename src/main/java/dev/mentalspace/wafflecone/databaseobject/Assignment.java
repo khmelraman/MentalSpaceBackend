@@ -1,3 +1,5 @@
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class Assignment {
     public long assignmentId;
     public long classId;

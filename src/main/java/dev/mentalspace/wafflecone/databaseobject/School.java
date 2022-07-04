@@ -1,3 +1,5 @@
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class School {
     public long schoolId;
     public String shortName;

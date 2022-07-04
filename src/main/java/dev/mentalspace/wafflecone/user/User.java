@@ -12,7 +12,8 @@ public class User {
     public long teacherId;
     public long studentId;
 
-    public User() {
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
 

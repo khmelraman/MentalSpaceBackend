@@ -1,4 +1,5 @@
-// Period Object in Database
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class Period {
     public long classId;
     public long teacherId;

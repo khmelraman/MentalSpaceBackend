@@ -1,3 +1,5 @@
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class RefreshToken {
     public long refreshTokenId;
     public long userId;

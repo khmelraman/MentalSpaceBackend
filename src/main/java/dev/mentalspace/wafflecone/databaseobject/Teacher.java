@@ -1,3 +1,5 @@
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class Teacher {
     public long teacherId;
     public long canonicalId;

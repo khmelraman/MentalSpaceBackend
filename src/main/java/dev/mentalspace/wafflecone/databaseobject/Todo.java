@@ -1,3 +1,5 @@
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class Todo {
     public long todoId;
     public long workId;

@@ -1,3 +1,5 @@
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class AuthToken {
     public long authTokenId;
     public long userId;

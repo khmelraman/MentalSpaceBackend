@@ -1,3 +1,5 @@
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class Subject {
     public long subjectId;
     public String department;

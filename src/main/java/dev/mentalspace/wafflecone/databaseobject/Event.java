@@ -1,3 +1,5 @@
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class Event {
     public long eventId;
     public long studentId;

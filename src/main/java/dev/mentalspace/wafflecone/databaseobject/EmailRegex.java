@@ -1,3 +1,5 @@
+package dev.mentalspace.wafflecone.databaseobject;
+
 public class EmailRegex {
     public long emailRegexId;
     public long schoolId;

@@ -18,7 +18,7 @@ public class Utils {
 			return MessageDigest.getInstance("SHA-256");
 		} catch (NoSuchAlgorithmException e) {
 			// SHA-256 is "guaranteed" to be supported, but just in case; log the error.
-			LoggingController.logger.error("MessageDigest SHA-256 Algorithm not found.");
+			WaffleConeController.logger.error("MessageDigest SHA-256 Algorithm not found.");
 			return null;
 		}
 	}
