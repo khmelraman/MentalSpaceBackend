@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# I have no better way of doing this, so expect difficulties in application.properties
+# I'll push a redacted version at some point for ease of installation
+**/application.properties
