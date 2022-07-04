@@ -18,5 +18,5 @@ public class UserRowMapper implements RowMapper<User> {
 		user.studentId = row.getLong("student_id");
 		user.teacherId = row.getLong("teacher_id");
 		return user;
-	}	
+	}
 }
