@@ -41,7 +41,7 @@ public class UserController {
 	 *   username: exist, collision
 	 *   email:    exist, collision
 	 */
-	@PostMapping(path="/register")
+	@PostMapping(path="/register", consumes={MediaType.APPLICATION_JSON_VALUE})
 	public ResponseEntity<String> userRegister(@RequestBody User registerDetails) {
 		// builder method of doing errors; that way all errors are caught at once
 		JSONObject errors = new JSONObject();
@@ -78,8 +78,7 @@ public class UserController {
 			return ResponseEntity.status(returnStatus).body(new ErrorResponse(errors).toString());
 		}
 
-		// // add user to db
-		WaffleConeController.logger.error(String.valueOf(registerDetails.emailVerified));
+		// add user to db
 		registerDetails.password = Utils.encodePassword(registerDetails.password);
 		WaffleConeController.logger.error(registerDetails.password);
 		userService.add(registerDetails);
