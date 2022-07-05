@@ -45,4 +45,8 @@ public class Utils {
 	public static boolean matchesApiKey(String key, String hash) {
 		return hash.equals(hashApiKey(key));
 	}
+
+	public static boolean isEmpty(String string) {
+		return string == null || string.equals("");
+	}
 }
