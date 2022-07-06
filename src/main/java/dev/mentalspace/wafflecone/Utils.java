@@ -30,16 +30,22 @@ public class Utils {
 		return base64Encoder.encodeToString(arr);
 	}
 
+	public static String hashApiKey(String apiKey) {
+		return base64Encoder.encodeToString(getSha256Digester().digest(base64Decoder.decode(apiKey)));
+	}
+
+	// Commented out due to not being explicit enough imo
+	// public static String[] newApiKeyPair() {
+	// 	String rawKey = generateApiKey();
+	// 	return new String[] {rawKey, hashApiKey(rawKey)};
+	// }
+
 	public static String encodePassword(String password) {
 		return passwordEncoder.encode(password);
 	}
 
 	public static boolean matchesPassword(String password, String hash) {
 		return passwordEncoder.matches(password, hash);
-	}
-
-	public static String hashApiKey(String apiKey) {
-		return base64Encoder.encodeToString(getSha256Digester().digest(base64Decoder.decode(apiKey)));
 	}
 
 	public static boolean matchesApiKey(String key, String hash) {

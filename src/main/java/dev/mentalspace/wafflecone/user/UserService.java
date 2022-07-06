@@ -22,9 +22,25 @@ public class UserService {
 
 	public User getById(long id) {
 		String sql =
-			"SELECT type, username, email, email_verified, password, school_id, teacher_id, student_id FROM user WHERE user_id = ?;";
+			"SELECT user_id, type, username, email, email_verified, password, school_id, teacher_id, student_id FROM user WHERE user_id = ?;";
 		RowMapper<User> rowMapper = new UserRowMapper();
 		User user = jdbcTemplate.queryForObject(sql, rowMapper, id);
+		return user;
+	}
+
+	public User getByUsername(String username) {
+		String sql =
+			"SELECT user_id, type, username, email, email_verified, password, school_id, teacher_id, student_id FROM user WHERE username = ?;";
+		RowMapper<User> rowMapper = new UserRowMapper();
+		User user = jdbcTemplate.queryForObject(sql, rowMapper, username);
+		return user;
+	}
+
+	public User getByEmail(String email) {
+		String sql =
+			"SELECT user_id, type, username, email, email_verified, password, school_id, teacher_id, student_id FROM user WHERE email = ?;";
+		RowMapper<User> rowMapper = new UserRowMapper();
+		User user = jdbcTemplate.queryForObject(sql, rowMapper, email);
 		return user;
 	}
 
@@ -54,7 +70,7 @@ public class UserService {
 		String sql = "SELECT COUNT(*) FROM user WHERE email = ?;";
 		int count = jdbcTemplate.queryForObject(sql, Integer.class, email);
 		return count != 0;
-	}	
+	}
 
 	public void add(User user) {
 		String sql =

@@ -18,8 +18,19 @@ public class Response {
 			.put("status", status);
 	}
 
-	public void put(String key, String value) {
+	public Response put(String key, String value) {
 		this.response.put(key, value);
+		return this;
+	}
+
+	public Response put(String key, Long value) {
+		this.response.put(key, value);
+		return this;
+	}
+
+	public Response put(String key, JSONObject value) {
+		this.response.put(key, value);
+		return this;
 	}
 
 	@Override

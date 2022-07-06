@@ -1,5 +1,7 @@
 package dev.mentalspace.wafflecone.user;
 
+import org.json.JSONObject;
+
 public class User {
     public Long userId;
     public Integer type;
@@ -35,17 +37,43 @@ public class User {
     public void setCsrfToken(String csrfToken) {
         this.csrfToken = csrfToken;
     }
+
+    private String typeToString(int val) {
+        switch (val) {
+            case 0:
+                return "Student";
+            case 1:
+                return "Teacher";
+            case 2:
+                return "Admin";
+            default:
+                return "Student";
+        }
+    }
+
+    public JSONObject toJsonObject() {
+        JSONObject jsonObj = new JSONObject()
+            .put("userId", this.userId)
+            .put("type", typeToString(this.type))
+            .put("username", this.username)
+            .put("email", this.email)
+            .put("emailVerified", this.emailVerified) // TODO: debate on whether this is an okay default
+            .put("schoolId", this.schoolId)
+            .put("teacherId", this.teacherId)
+            .put("studentId", this.studentId);
+
+        return jsonObj;
+    }
 }
 
 enum UserType {
-    STUDENT(0),
-    TEACHER(1),
-    ADMIN(2);
+    STUDENT,
+    TEACHER,
+    ADMIN;
 
-    int value;
+    private static final UserType[] userTypeValues = UserType.values();
 
-    UserType(int value) {
-        this.value = value;
+    UserType() {
     }
 
     public UserType toEnum(String name) {
@@ -61,18 +89,7 @@ enum UserType {
         }
     }
 
-    public UserType toEnum(int value) {
-        switch (value) {
-            case 0:
-                return STUDENT;
-            case 1:
-                return TEACHER;
-            case 2:
-                return ADMIN;
-            default:
-                return STUDENT;
-        }
+    public UserType fromInt(int val) {
+        return userTypeValues[val];
     }
-
-
 }
