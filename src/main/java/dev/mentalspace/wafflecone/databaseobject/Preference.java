@@ -1,12 +1,12 @@
 package dev.mentalspace.wafflecone.databaseobject;
 
 public class Preference {
-    public long preferenceId;
-    public long studentId;
-    public int assignmentOrder;
-    public int startType;
-    public int breakLength;
-    public int breakFrequency;
+    public Long preferenceId;
+    public Long studentId;
+    public Integer assignmentOrder;
+    public Integer startType;
+    public Long breakLength;
+    public Long breakFrequency;
 
     public Preference() {
     }

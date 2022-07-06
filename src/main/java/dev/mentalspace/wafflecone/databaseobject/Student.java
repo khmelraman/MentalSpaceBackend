@@ -1,12 +1,12 @@
 package dev.mentalspace.wafflecone.databaseobject;
 
 public class Student {
-    public long studentId;
-    public long canonicalId;
+    public Long studentId;
+    public String canonicalId;
     public String firstName;
     public String lastName;
-    public int phone;
-    public int grade;
+    public Long phone;
+    public Integer grade;
 
     public Student() {
     }    

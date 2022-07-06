@@ -1,10 +1,10 @@
 package dev.mentalspace.wafflecone.databaseobject;
 
 public class Enrollment {
-    public long enrollmentId;
-    public long studentId;
-    public long classId;
-    public int preference;
+    public Long enrollmentId;
+    public Long studentId;
+    public Long periodId;
+    public Integer studentPreference;
 
     public Enrollment() {
     }   
