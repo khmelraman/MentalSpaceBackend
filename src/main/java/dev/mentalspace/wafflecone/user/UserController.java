@@ -61,6 +61,9 @@ public class UserController {
 		// builder method of doing errors; that way all errors are caught at once
 		JSONObject errors = new JSONObject();
 		HttpStatus returnStatus = HttpStatus.OK; // used to check if error'd
+
+		//TODO: either frontend implements username, or we delete username properly
+		registerDetails.username = registerDetails.email;
 		
 		// verification block refactor later into a monad
 		if (Utils.isEmpty(registerDetails.password)) {
@@ -108,16 +111,16 @@ public class UserController {
 		User checkUser;
 		boolean userValid = false;
 	
-		if (userService.existsByUsername(loginDetails.username)) {
-			checkUser = userService.getByUsername(loginDetails.username);
+		if (userService.existsByUsername(loginDetails.email)) {
+			checkUser = userService.getByUsername(loginDetails.email);
 			if (Utils.matchesPassword(loginDetails.password, checkUser.password)) {
 				userValid = true;
 			} else {
 				JSONObject errors = new JSONObject().put("password", ErrorString.INCORRECT_PASSWORD);
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 			}
-		} else if (userService.existsByEmail(loginDetails.username)) {
-			checkUser = userService.getByEmail(loginDetails.username);
+		} else if (userService.existsByEmail(loginDetails.email)) {
+			checkUser = userService.getByEmail(loginDetails.email);
 			if (Utils.matchesPassword(loginDetails.password, checkUser.password)) {
 				userValid = true;
 			} else {
@@ -125,7 +128,7 @@ public class UserController {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 			}
 		} else {
-			JSONObject errors = new JSONObject().put("username", ErrorString.INCORRECT_USERNAME);
+			JSONObject errors = new JSONObject().put("email", ErrorString.INCORRECT_EMAIL);
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 		}
 
@@ -157,7 +160,8 @@ public class UserController {
 	@GetMapping("")
 	public ResponseEntity<String> getUserDetails(
 		@RequestHeader("Authorization") String authApiKey, 
-		@RequestParam(value = "userId", defaultValue = "-1") long searchId) {
+		@RequestParam(value = "userId", defaultValue = "-1") long searchUserId,
+		@RequestParam(value = "canonicalId", defaultValue = "") String searchCanonicalId) {
 			AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 			if (!authToken.valid) {
 				JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -165,11 +169,11 @@ public class UserController {
 			}
 			User loggedInUser = userService.getById(authToken.userId);
 
-			if (searchId == -1) {
+			if (searchUserId == -1) {
 				Response response = new Response("success").put("user", loggedInUser.toJsonObject());
 				return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 			}
-
+			// TODO: Implement searching by IDs
 			return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not Implemented Yet.");
 		}
 }

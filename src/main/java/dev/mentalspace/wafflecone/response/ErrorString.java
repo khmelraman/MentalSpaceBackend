@@ -9,6 +9,7 @@ public class ErrorString {
 
 	public static final String EMAIL_EMPTY = emptyString("email");
 	public static final String EMAIL_IN_USE = inUseString("Email");
+	public static final String INCORRECT_EMAIL= "Incorrect Email";
 
 	public static final String PASSWORD_EMPTY = emptyString("password");
 	public static final String PASSWORD_LENGTH = "Password length is too short. (req. >=8 characters)";
