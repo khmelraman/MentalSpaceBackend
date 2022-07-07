@@ -51,7 +51,7 @@ public class RefreshToken {
 			  "refreshToken=" + rawRefreshApiKey
 			+ "; Expires=" + sdf.format(new Date(System.currentTimeMillis())) + " GMT"
 			+ "; SameSite=Strict"
-			+ "; Path=/auth/token"
+			+ "; Path=/api/v0/auth/token"
 			+ "; Secure"
 			+ "; HttpOnly");
     }

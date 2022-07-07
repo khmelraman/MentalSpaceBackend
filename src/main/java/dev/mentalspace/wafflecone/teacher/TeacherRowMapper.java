@@ -1,4 +1,4 @@
-package dev.mentalspace.wafflecone.databaseobject;
+package dev.mentalspace.wafflecone.teacher;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -33,7 +33,8 @@ public class SecurityConfiguration {
                     .allowedOrigins("https://dev-waffle-cone.probablyanasian.dev",
                         "https://probablyanasian.stoplight.io/",
                         "https://editor.swagger.io/")
-                    .allowCredentials(true);
+                    .allowCredentials(true)
+                    .allowedMethods("GET", "POST", "PATCH", "DELETE");
 			}
 		};
 	}

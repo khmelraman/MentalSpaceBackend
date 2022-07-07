@@ -15,6 +15,8 @@ public class ErrorString {
 	public static final String PASSWORD_LENGTH = "Password length is too short. (req. >=8 characters)";
 	public static final String INCORRECT_PASSWORD = "Incorrect Password";
 
+	public static final String PHONE_NUMBER_LENGTH = "Phone number is too long";
+
 	public static final String INTERNAL_ERROR_UNREACHABLE = "You've managed to reach a unreachable area of code.";
 
 	public static final String REFRESH_TOKEN_CHAIN_INVALID = "Refresh token chain is invalid.";
@@ -22,6 +24,9 @@ public class ErrorString {
 	public static final String REFRESH_TOKEN_USED = "Refresh token has already been used.";
 
 	public static final String INVALID_ACCESS_TOKEN = "Access Token provided was invalid.";
+
+	public static final String USER_TYPE = "Your user type is not valid for this request";
+	public static final String ALREADY_INITIALIZED = "This user account is already initialized. Send a PATCH request instead?";
 
 	public static String inUseString(String field) {
 		return field + " is already in use";

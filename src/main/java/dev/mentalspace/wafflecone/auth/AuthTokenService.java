@@ -58,8 +58,8 @@ public class AuthTokenService {
 
     public void add(AuthToken authToken) {
         String sql =
-			"INSERT INTO auth_token (user_id, token_string, expiration_time, valid, permissions)"
-				+ " VALUES (?, ?, ?, ?, ?);";
+			"INSERT INTO auth_token (user_id, refresh_token_chain_id, token_string, expiration_time, valid, permissions)"
+				+ " VALUES (?, ?, ?, ?, ?, ?);";
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		
 		jdbcTemplate.update(
@@ -68,15 +68,33 @@ public class AuthTokenService {
 					PreparedStatement ps =
 						connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 					ps.setLong(1, authToken.userId);
-					ps.setString(2, authToken.tokenString);
-					ps.setLong(3, authToken.expirationTime);
-					ps.setBoolean(4, authToken.valid);
-					ps.setInt(5, authToken.permissions.ordinal());
+                    ps.setLong(2, authToken.refreshTokenChainId);
+					ps.setString(3, authToken.tokenString);
+					ps.setLong(4, authToken.expirationTime);
+					ps.setBoolean(5, authToken.valid);
+					ps.setInt(6, authToken.permissions.ordinal());
 					return ps;
 				}
 		},  keyHolder);
 
 		authToken.authTokenId = keyHolder.getKey().longValue();
+    }
+
+    public void revokeByToken(AuthToken authToken) {
+        String sql =
+        "UPDATE auth_token SET valid = ? WHERE token_string = ?;";
+        
+        jdbcTemplate.update(
+            new PreparedStatementCreator() {
+                public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                    PreparedStatement ps =
+                        connection.prepareStatement(sql);
+                    ps.setBoolean(1, false);
+                    ps.setString(2, authToken.tokenString);
+                    return ps;
+                }
+        });
+
     }
     
     // Check that the key is valid

@@ -48,6 +48,7 @@ public class AuthController {
 
 	@PostMapping("/token")
 	public ResponseEntity<String> refreshAccessToken(@CookieValue("refreshToken") String refreshTokenRawKey) {
+		WaffleConeController.logger.debug("Recieved Token: " + refreshTokenRawKey);
 		// Negated logic for cleanliness
 		if (!refreshTokenService.existsByRawKey(refreshTokenRawKey)) {
 			JSONObject errors = new JSONObject().put("refreshToken", ErrorString.REFRESH_TOKEN_NOT_FOUND);

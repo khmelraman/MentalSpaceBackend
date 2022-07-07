@@ -2,94 +2,61 @@ package dev.mentalspace.wafflecone.user;
 
 import org.json.JSONObject;
 
+import dev.mentalspace.wafflecone.Utils;
+
 public class User {
     public Long userId;
-    public Integer type;
+    public UserType type;
     public String username;
     public String email;
     public boolean emailVerified;
     String password;
-    String csrfToken;
 
     public Long schoolId;
     public Long teacherId;
     public Long studentId;
 
+    // For patchUser
+    String newPassword;
+    String currentPassword;
+
     public void setType(String type) {
-        switch (type.toUpperCase()) {
-            case "STUDENT":
-                this.type = 0;
-                break;
-            case "TEACHER":
-                this.type = 0;
-                break;
-            case "ADMIN":
-                this.type = 0;
-                break;
-            default:
-                this.type = 0;
-                break;
-        }
+        this.type = UserType.valueOf(type.toUpperCase());
     }
     public void setPassword(String password) {
         this.password = password;
     }
-    public void setCsrfToken(String csrfToken) {
-        this.csrfToken = csrfToken;
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
+    public void setCurrentPassword(String currentPassword) {
+        this.currentPassword = currentPassword;
     }
 
-    private String typeToString(int val) {
-        switch (val) {
-            case 0:
-                return "Student";
-            case 1:
-                return "Teacher";
-            case 2:
-                return "Admin";
-            default:
-                return "Student";
+    public void updateDetails(User updUser) {
+        if (!Utils.isEmpty(updUser.username)) {
+            this.username = updUser.username;
+        }
+        if (!Utils.isEmpty(updUser.email)) {
+            this.email = updUser.email;
+        }
+        if (!Utils.isEmpty(updUser.newPassword)) {
+            this.password = Utils.encodePassword(updUser.newPassword);
         }
     }
 
+    // Used only for response output.
     public JSONObject toJsonObject() {
         JSONObject jsonObj = new JSONObject()
             .put("userId", this.userId)
-            .put("type", typeToString(this.type))
+            .put("type", Utils.capFirstLetter(this.type.toString()))
             .put("username", this.username)
             .put("email", this.email)
-            .put("emailVerified", this.emailVerified) // TODO: debate on whether this is an okay default
+            .put("emailVerified", this.emailVerified) // TODO: debate on whether this is an sane default
             .put("schoolId", this.schoolId)
             .put("teacherId", this.teacherId)
             .put("studentId", this.studentId);
 
         return jsonObj;
-    }
-}
-
-enum UserType {
-    STUDENT,
-    TEACHER,
-    ADMIN;
-
-    private static final UserType[] userTypeValues = UserType.values();
-
-    UserType() {
-    }
-
-    public UserType toEnum(String name) {
-        switch (name.toUpperCase()) {
-            case "STUDENT":
-                return STUDENT;
-            case "TEACHER":
-                return TEACHER;
-            case "ADMIN":
-                return ADMIN;
-            default:
-                return STUDENT;
-        }
-    }
-
-    public UserType fromInt(int val) {
-        return userTypeValues[val];
     }
 }

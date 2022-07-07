@@ -9,6 +9,7 @@ import dev.mentalspace.wafflecone.Utils;
 public class AuthToken {
     public Long authTokenId;
     public Long userId;
+    public Long refreshTokenChainId;
     public String tokenString;
     public Long expirationTime;
     public boolean valid;
@@ -19,6 +20,7 @@ public class AuthToken {
 
     public void loadUsingRefreshToken(RefreshToken refreshToken, String rawApiKey) {
         this.userId = refreshToken.userId;
+        this.refreshTokenChainId = refreshToken.refreshTokenChainId;
         this.tokenString = Utils.hashApiKey(rawApiKey);
         this.expirationTime = System.currentTimeMillis() + VALIDITY_DURATION;
         this.valid = true;

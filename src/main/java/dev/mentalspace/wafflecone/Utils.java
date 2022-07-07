@@ -55,4 +55,8 @@ public class Utils {
 	public static boolean isEmpty(String string) {
 		return string == null || string.equals("");
 	}
+
+	public static String capFirstLetter(String inp) {
+		return inp.substring(0,1).toUpperCase() + inp.substring(1).toLowerCase();
+	}
 }
