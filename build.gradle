@@ -21,6 +21,7 @@ ext {
 dependencies {
 	implementation 'org.json:json:20220320'
 	implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+	implementation 'org.dmfs:lib-recur:0.12.2'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.security:spring-security-core'
 	implementation 'org.springframework.security:spring-security-web'
