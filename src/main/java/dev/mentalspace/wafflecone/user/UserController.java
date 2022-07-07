@@ -39,11 +39,6 @@ public class UserController {
 	@Autowired
 	AuthTokenService authTokenService;
 
-	@GetMapping("/test")
-	public ResponseEntity<String> test(@RequestHeader("Authorization") String apiToken) {
-		return ResponseEntity.status(HttpStatus.OK).body(new Response().toString());
-	}
-	
 	/**
 	 * Registration path, verifies that all parameters are met then creates user account.
 	 * Checks implmented:

@@ -8,6 +8,13 @@ public class Period {
     public String classCode;
     public boolean archived;
 
+    boolean regenerateClassCode;
+    
+    public void setRegenerateClassCode(boolean regenerateClassCode) {
+        this.regenerateClassCode = regenerateClassCode;
+    }
+    
+
     public Period() {
     }
 }

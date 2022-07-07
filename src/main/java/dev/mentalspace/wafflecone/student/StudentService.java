@@ -30,6 +30,25 @@ public class StudentService {
 		return student;
 	}
 
+	public void updateStudent(Student student) {
+		String sql = "UPDATE student SET canonical_id = ?, first_name = ?, last_name = ?, phone = ?, grade = ? WHERE student_id = ?";
+		jdbcTemplate.update(
+			new PreparedStatementCreator() {
+				public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+					PreparedStatement ps =
+						connection.prepareStatement(sql);
+					ps.setString(1, student.canonicalId);
+					ps.setString(2, student.firstName);
+					ps.setString(3, student.lastName);
+					ps.setLong(4, student.phone);
+					ps.setInt(5, student.grade);
+					ps.setLong(6, student.studentId);
+					return ps;
+				}
+			}
+		);
+	}
+
     public void add(Student student) {
         String sql =
 			"INSERT INTO student (canonical_id, first_name, last_name, phone, grade)"

@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -103,5 +104,32 @@ public class TeacherController {
 		}
 		// TODO: implement teacher details by teacherId and canonicalId
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
-	} 
+	}
+
+	@PatchMapping(path = "", consumes={MediaType.APPLICATION_JSON_VALUE})
+	public ResponseEntity<String> patchStudent(
+		@RequestHeader("Authorization") String authApiKey,
+		@RequestBody Teacher patchDetails) {
+		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+		if (!authToken.valid) {
+			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+		User loggedInUser = userService.getById(authToken.userId);
+
+		if (patchDetails.phone > 9_999_999_999_9999L) {
+			JSONObject errors = new JSONObject().put("phone", ErrorString.PHONE_NUMBER_LENGTH);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+
+		if (patchDetails.teacherId == null || patchDetails.teacherId <= 0) {
+			Teacher loggedInTeacher = teacherService.getById(loggedInUser.studentId);
+			loggedInTeacher.updateTeacher(patchDetails);
+			studentService.updateStudent(loggedInStudent);
+			return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
+		}
+
+		// TODO: Implement modify other people's account(s)
+		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not Implemented Yet.");
+	}
 }

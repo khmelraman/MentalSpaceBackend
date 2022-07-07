@@ -2,6 +2,8 @@ package dev.mentalspace.wafflecone.teacher;
 
 import org.json.JSONObject;
 
+import dev.mentalspace.wafflecone.Utils;
+
 public class Teacher {
     public Long teacherId;
     public String canonicalId;
@@ -11,6 +13,24 @@ public class Teacher {
     public String department;
 
     public Teacher() {
+    }
+
+    public void updateStudent(Teacher updTeacher) {
+        if (!Utils.isEmpty(updTeacher.canonicalId)) {
+            this.canonicalId = updTeacher.canonicalId;
+        }
+        if (!Utils.isEmpty(updTeacher.firstName)) {
+            this.firstName = updTeacher.firstName;
+        }
+        if (!Utils.isEmpty(updTeacher.lastName)) {
+            this.lastName = updTeacher.lastName;
+        }
+        if (!(updTeacher.phone == null || updTeacher.phone == 0)) {
+            this.phone = updTeacher.phone;
+        }
+        if (!Utils.isEmpty(updTeacher.department)) {
+            this.department = updTeacher.department;
+        }
     }
 
     /**

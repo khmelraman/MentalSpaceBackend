@@ -30,6 +30,25 @@ public class TeacherService {
 		return teacher;
 	}
 
+	public void updateTeacher(Teacher teacher) {
+		String sql = "UPDATE teacher SET canonical_id = ?, first_name = ?, last_name = ?, phone = ?, department = ? WHERE teacher_id = ?";
+		jdbcTemplate.update(
+			new PreparedStatementCreator() {
+				public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+					PreparedStatement ps =
+						connection.prepareStatement(sql);
+					ps.setString(1, teacher.canonicalId);
+					ps.setString(2, teacher.firstName);
+					ps.setString(3, teacher.lastName);
+					ps.setLong(4, teacher.phone);
+					ps.setString(5, teacher.department);
+					ps.setLong(6, teacher.teacherId);
+					return ps;
+				}
+			}
+		);
+	}
+
     public void add(Teacher teacher) {
         String sql =
 			"INSERT INTO teacher (canonical_id, first_name, last_name, phone, department)"
