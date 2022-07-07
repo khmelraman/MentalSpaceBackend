@@ -73,7 +73,7 @@ public class TeacherController {
 		WaffleConeController.logger.debug("teacher.teacherId after insert: " + String.valueOf(registerTeacherDetails.teacherId));
 		WaffleConeController.logger.debug("user.teacherId: " + String.valueOf(loggedInUser.teacherId));
 
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(
+		return ResponseEntity.status(HttpStatus.OK).body(
 			new Response("success")
 				.put("teacherId", registerTeacherDetails.teacherId)
 				.toString()

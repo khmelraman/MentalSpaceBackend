@@ -1,4 +1,4 @@
-package dev.mentalspace.wafflecone.databaseobject;
+package dev.mentalspace.wafflecone.period;
 
 public class Period {
     public Long periodId;
@@ -13,7 +13,6 @@ public class Period {
     public void setRegenerateClassCode(boolean regenerateClassCode) {
         this.regenerateClassCode = regenerateClassCode;
     }
-    
 
     public Period() {
     }

@@ -27,6 +27,7 @@ public class ErrorString {
 
 	public static final String USER_TYPE = "Your user type is not valid for this request";
 	public static final String ALREADY_INITIALIZED = "This user account is already initialized. Send a PATCH request instead?";
+	public static final String INVALID_ID = "The ID you are searching for is invalid";
 
 	public static String inUseString(String field) {
 		return field + " is already in use";

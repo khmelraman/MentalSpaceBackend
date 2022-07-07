@@ -30,6 +30,12 @@ public class TeacherService {
 		return teacher;
 	}
 
+	public boolean existsById(long id) {
+		String sql = "SELECT COUNT(*) FROM teacher WHERE teacher_id = ?;";
+		int count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+		return count != 0;
+	}
+
 	public void updateTeacher(Teacher teacher) {
 		String sql = "UPDATE teacher SET canonical_id = ?, first_name = ?, last_name = ?, phone = ?, department = ? WHERE teacher_id = ?";
 		jdbcTemplate.update(

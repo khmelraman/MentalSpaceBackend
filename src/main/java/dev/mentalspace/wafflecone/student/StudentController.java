@@ -72,7 +72,7 @@ public class StudentController {
 		studentService.add(registerStudentDetails);
 		userService.updateStudent(loggedInUser, registerStudentDetails);
 
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(
+		return ResponseEntity.status(HttpStatus.OK).body(
 			new Response("success")
 				.put("studentId", registerStudentDetails.studentId)
 				.toString()

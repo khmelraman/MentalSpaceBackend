@@ -1,6 +1,5 @@
 package dev.mentalspace.wafflecone.user;
 
-
 import dev.mentalspace.wafflecone.Utils;
 import dev.mentalspace.wafflecone.WaffleConeController;
 import dev.mentalspace.wafflecone.auth.AuthToken;
