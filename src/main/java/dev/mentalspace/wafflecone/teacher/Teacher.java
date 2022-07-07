@@ -15,7 +15,7 @@ public class Teacher {
     public Teacher() {
     }
 
-    public void updateStudent(Teacher updTeacher) {
+    public void updateTeacher(Teacher updTeacher) {
         if (!Utils.isEmpty(updTeacher.canonicalId)) {
             this.canonicalId = updTeacher.canonicalId;
         }

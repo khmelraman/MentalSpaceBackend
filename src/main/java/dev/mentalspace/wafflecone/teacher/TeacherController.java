@@ -125,7 +125,7 @@ public class TeacherController {
 		if (patchDetails.teacherId == null || patchDetails.teacherId <= 0) {
 			Teacher loggedInTeacher = teacherService.getById(loggedInUser.studentId);
 			loggedInTeacher.updateTeacher(patchDetails);
-			studentService.updateStudent(loggedInStudent);
+			teacherService.updateTeacher(loggedInTeacher);
 			return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
 		}
 
