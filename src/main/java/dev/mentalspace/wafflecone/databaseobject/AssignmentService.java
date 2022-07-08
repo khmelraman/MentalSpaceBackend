@@ -37,6 +37,14 @@ public class AssignmentService {
         return assignments;
     }
 
+    public List<Assignment> getByStudentId(long id) {
+        String sql = "SELECT assignment_id, period_id, date_assigned, date_due, type, estimated_burden, name, description "
+                + "FROM assignment JOIN period ON assignment.period_id = period.period_id JOIN enrollment ON period.period_id = enrollment.period_id WHERE enrollment.student_id = ?;";
+        RowMapper<Assignment> rowMapper = new AssignmentRowMapper();
+        List<Assignment> assignments = jdbcTemplate.query(sql, rowMapper, id);
+        return assignments;
+    }
+
     public void addAssignment(Assignment assignment) {
         String sql = "INSERT INTO assignment (period_id, date_assigned, date_due, type, estimated_burden, name, description) VALUES "
                 + "(?, ?, ?, ?, ?, ?, ?);";
