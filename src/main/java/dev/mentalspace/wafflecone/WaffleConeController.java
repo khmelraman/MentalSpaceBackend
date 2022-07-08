@@ -27,10 +27,7 @@ public class WaffleConeController {
 		SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 		WaffleConeController.logger.error(sdf.format(new Date(System.currentTimeMillis())));
-		return ResponseEntity.status(HttpStatus.OK).body(
-			new Response("success")
-				.put("time", sdf.format(new Date(System.currentTimeMillis())) + " GMT"
-			).toString()
-		);
+		return ResponseEntity.status(HttpStatus.OK).body(new Response("success")
+				.put("time", sdf.format(new Date(System.currentTimeMillis())) + " GMT").toString());
 	}
 }

@@ -31,7 +31,7 @@ import dev.mentalspace.wafflecone.user.UserService;
 import dev.mentalspace.wafflecone.user.UserType;
 
 @RestController
-@RequestMapping(path={"/api/v0/teacher"})
+@RequestMapping(path = { "/api/v0/teacher" })
 public class TeacherController {
 	@Autowired
 	AuthTokenService authTokenService;
@@ -40,18 +40,17 @@ public class TeacherController {
 	@Autowired
 	TeacherService teacherService;
 
-	@PostMapping(path="", consumes={MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<String> registerTeacher(
-		@RequestHeader("Authorization") String authApiKey,
-		@RequestBody Teacher registerTeacherDetails) {
+	@PostMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<String> registerTeacher(@RequestHeader("Authorization") String authApiKey,
+			@RequestBody Teacher registerTeacherDetails) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
 			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 		}
 		User loggedInUser = userService.getById(authToken.userId);
-		
-		// negated logic for clarity
+
+		// negated logic for cleanliness
 		if (loggedInUser.type != UserType.TEACHER) {
 			JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
@@ -65,26 +64,23 @@ public class TeacherController {
 			JSONObject errors = new JSONObject().put("user", ErrorString.ALREADY_INITIALIZED);
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 		}
-		
+
 		// insert into db
 		WaffleConeController.logger.debug("teacherId before insert: " + String.valueOf(loggedInUser.teacherId));
 		teacherService.add(registerTeacherDetails);
 		userService.updateTeacher(loggedInUser, registerTeacherDetails);
-		WaffleConeController.logger.debug("teacher.teacherId after insert: " + String.valueOf(registerTeacherDetails.teacherId));
+		WaffleConeController.logger
+				.debug("teacher.teacherId after insert: " + String.valueOf(registerTeacherDetails.teacherId));
 		WaffleConeController.logger.debug("user.teacherId: " + String.valueOf(loggedInUser.teacherId));
 
-		return ResponseEntity.status(HttpStatus.OK).body(
-			new Response("success")
-				.put("teacherId", registerTeacherDetails.teacherId)
-				.toString()
-		);
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(new Response("success").put("teacherId", registerTeacherDetails.teacherId).toString());
 	}
 
 	@GetMapping("")
-	public ResponseEntity<String> teacherDetails(
-		@RequestHeader("Authorization") String authApiKey,
-		@RequestParam(value = "teacherId", defaultValue = "-1") long searchTeacherId,
-		@RequestParam(value = "canonicalId", defaultValue = "") String searchCanonicalId) {
+	public ResponseEntity<String> teacherDetails(@RequestHeader("Authorization") String authApiKey,
+			@RequestParam(value = "teacherId", defaultValue = "-1") long searchTeacherId,
+			@RequestParam(value = "canonicalId", defaultValue = "") String searchCanonicalId) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
 			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -95,21 +91,17 @@ public class TeacherController {
 		if ((searchTeacherId == -1) && (searchCanonicalId.equals(""))) {
 			if (loggedInUser.type == UserType.TEACHER) {
 				Teacher teacher = teacherService.getById(loggedInUser.teacherId);
-				return ResponseEntity.status(HttpStatus.OK).body(
-					new Response("success")
-						.put("teacher", teacher.toJsonObject())
-						.toString()
-				);
+				return ResponseEntity.status(HttpStatus.OK)
+						.body(new Response("success").put("teacher", teacher.toJsonObject()).toString());
 			}
 		}
 		// TODO: implement teacher details by teacherId and canonicalId
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
 	}
 
-	@PatchMapping(path = "", consumes={MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<String> patchStudent(
-		@RequestHeader("Authorization") String authApiKey,
-		@RequestBody Teacher patchDetails) {
+	@PatchMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<String> patchTeacher(@RequestHeader("Authorization") String authApiKey,
+			@RequestBody Teacher patchDetails) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
 			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);

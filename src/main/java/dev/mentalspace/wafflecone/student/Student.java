@@ -35,16 +35,13 @@ public class Student {
 
     /**
      * Returns a JSON object to be used in a server response
+     * 
      * @return JSONObject for embedding into a Response
      */
     public JSONObject toJsonObject() {
-        JSONObject jsonObj = new JSONObject()
-            .put("studentId", this.studentId)
-            .put("canonicalId", canonicalId)
-            .put("firstName", this.firstName)
-            .put("lastName", this.lastName)
-            .put("phone", this.phone)
-            .put("grade", this.grade);
+        JSONObject jsonObj = new JSONObject().put("studentId", this.studentId).put("canonicalId", canonicalId)
+                .put("firstName", this.firstName).put("lastName", this.lastName).put("phone", this.phone)
+                .put("grade", this.grade);
         return jsonObj;
     }
 }

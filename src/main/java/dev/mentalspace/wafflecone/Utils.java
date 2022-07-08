@@ -36,8 +36,8 @@ public class Utils {
 
 	// Commented out due to not being explicit enough imo
 	// public static String[] newApiKeyPair() {
-	// 	String rawKey = generateApiKey();
-	// 	return new String[] {rawKey, hashApiKey(rawKey)};
+	// String rawKey = generateApiKey();
+	// return new String[] {rawKey, hashApiKey(rawKey)};
 	// }
 
 	public static String encodePassword(String password) {
@@ -57,6 +57,6 @@ public class Utils {
 	}
 
 	public static String capFirstLetter(String inp) {
-		return inp.substring(0,1).toUpperCase() + inp.substring(1).toLowerCase();
+		return inp.substring(0, 1).toUpperCase() + inp.substring(1).toLowerCase();
 	}
 }

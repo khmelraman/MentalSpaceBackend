@@ -16,7 +16,7 @@ public class AuthToken {
     public AuthScope permissions;
 
     // valid for 30 minutes - in millis
-    public final long VALIDITY_DURATION = 30*60*1000;
+    public final long VALIDITY_DURATION = 30 * 60 * 1000;
 
     public void loadUsingRefreshToken(RefreshToken refreshToken, String rawApiKey) {
         this.userId = refreshToken.userId;

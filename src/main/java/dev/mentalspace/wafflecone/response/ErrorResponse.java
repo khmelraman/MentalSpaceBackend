@@ -4,7 +4,7 @@ import org.json.JSONObject;
 
 public class ErrorResponse extends Response {
 	public JSONObject errors;
- 
+
 	public ErrorResponse() {
 		super("error");
 		this.errors = new JSONObject(); // just {} this is "just-in-case"

@@ -10,7 +10,7 @@ public class RefreshTokenRowMapper implements RowMapper<RefreshToken> {
 		RefreshToken refreshToken = new RefreshToken();
 		refreshToken.refreshTokenId = row.getLong("refresh_token_id");
 		refreshToken.userId = row.getLong("user_id");
-        refreshToken.refreshTokenChainId = row.getLong("refresh_token_chain_id");
+		refreshToken.refreshTokenChainId = row.getLong("refresh_token_chain_id");
 		refreshToken.tokenString = row.getString("token_string");
 		refreshToken.expirationTime = row.getLong("expiration_time");
 		refreshToken.permissions = AuthScope.fromInt(row.getInt("permissions"));

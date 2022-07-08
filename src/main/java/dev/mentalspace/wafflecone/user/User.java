@@ -23,12 +23,15 @@ public class User {
     public void setType(String type) {
         this.type = UserType.valueOf(type.toUpperCase());
     }
+
     public void setPassword(String password) {
         this.password = password;
     }
+
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
     }
+
     public void setCurrentPassword(String currentPassword) {
         this.currentPassword = currentPassword;
     }
@@ -47,15 +50,11 @@ public class User {
 
     // Used only for response output.
     public JSONObject toJsonObject() {
-        JSONObject jsonObj = new JSONObject()
-            .put("userId", this.userId)
-            .put("type", Utils.capFirstLetter(this.type.toString()))
-            .put("username", this.username)
-            .put("email", this.email)
-            .put("emailVerified", this.emailVerified) // TODO: debate on whether this is an sane default
-            .put("schoolId", this.schoolId)
-            .put("teacherId", this.teacherId)
-            .put("studentId", this.studentId);
+        JSONObject jsonObj = new JSONObject().put("userId", this.userId)
+                .put("type", Utils.capFirstLetter(this.type.toString())).put("username", this.username)
+                .put("email", this.email).put("emailVerified", this.emailVerified) // TODO: debate on whether this is an
+                                                                                   // sane default
+                .put("schoolId", this.schoolId).put("teacherId", this.teacherId).put("studentId", this.studentId);
 
         return jsonObj;
     }

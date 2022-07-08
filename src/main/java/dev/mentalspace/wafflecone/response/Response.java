@@ -9,13 +9,11 @@ public class Response {
 	public JSONObject response;
 
 	public Response() {
-		this.response = new JSONObject()
-			.put("status", "success");
+		this.response = new JSONObject().put("status", "success");
 	}
 
 	public Response(String status) {
-		this.response = new JSONObject()
-			.put("status", status);
+		this.response = new JSONObject().put("status", status);
 	}
 
 	public Response put(String key, String value) {

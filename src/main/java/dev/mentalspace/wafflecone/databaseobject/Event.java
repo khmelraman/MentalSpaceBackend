@@ -17,7 +17,7 @@ public class Event {
     }
 
     public void setRecurringTime() throws InvalidRecurrenceRuleException {
-            this.rrule = new RecurrenceRule(this.rruleString);
+        this.rrule = new RecurrenceRule(this.rruleString);
     }
 
     public long getStartTimeForTheDay(long day) {
@@ -29,6 +29,6 @@ public class Event {
     }
 
     public long getEndTimeForTheDay(long day) {
-        return(this.getStartTimeForTheDay(day) + this.duration);
+        return (this.getStartTimeForTheDay(day) + this.duration);
     }
 }

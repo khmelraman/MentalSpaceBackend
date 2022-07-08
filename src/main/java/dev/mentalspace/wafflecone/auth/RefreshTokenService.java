@@ -19,21 +19,19 @@ import dev.mentalspace.wafflecone.Utils;
 @Transactional
 @Repository
 public class RefreshTokenService {
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     // get authtoken by id, idk why this would ever be used.
     public RefreshToken getById(Long id) {
-        String sql = 
-            "SELECT user_id, refresh_token_chain_id, token_string, expiration_time, permissions, valid FROM refresh_token WHERE refresh_token_id = ?;";
+        String sql = "SELECT user_id, refresh_token_chain_id, token_string, expiration_time, permissions, valid FROM refresh_token WHERE refresh_token_id = ?;";
         RowMapper<RefreshToken> rowMapper = new RefreshTokenRowMapper();
         RefreshToken refreshToken = jdbcTemplate.queryForObject(sql, rowMapper, id);
         return refreshToken;
     }
 
     public RefreshToken getBySha256Hash(String hashedKey) {
-        String sql = 
-            "SELECT refresh_token_id, user_id, refresh_token_chain_id, expiration_time, permissions, valid FROM refresh_token WHERE token_string = ?;";
+        String sql = "SELECT refresh_token_id, user_id, refresh_token_chain_id, expiration_time, permissions, valid FROM refresh_token WHERE token_string = ?;";
         RowMapper<RefreshToken> rowMapper = new RefreshTokenRowMapper();
         RefreshToken refreshToken = jdbcTemplate.queryForObject(sql, rowMapper, hashedKey);
         return refreshToken;
@@ -46,8 +44,8 @@ public class RefreshTokenService {
 
     public boolean existsBySha256Hash(String hashedKey) {
         String sql = "SELECT COUNT(*) FROM refresh_token WHERE token_string = ?;";
-		int count = jdbcTemplate.queryForObject(sql, Integer.class, hashedKey);
-		return count != 0;
+        int count = jdbcTemplate.queryForObject(sql, Integer.class, hashedKey);
+        return count != 0;
     }
 
     public boolean existsByRawKey(String rawKey) {
@@ -56,17 +54,14 @@ public class RefreshTokenService {
     }
 
     public void revokeChainById(long chainId) {
-        String sql = 
-            "UPDATE refresh_token_chain SET valid = ? WHERE refresh_token_chain_id = ?;";
-        jdbcTemplate.update(
-            new PreparedStatementCreator() {
-                public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-                    PreparedStatement ps =
-                        connection.prepareStatement(sql);
-                    ps.setBoolean(1, false);
-                    ps.setLong(2, chainId);
-                    return ps;
-                }
+        String sql = "UPDATE refresh_token_chain SET valid = ? WHERE refresh_token_chain_id = ?;";
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setBoolean(1, false);
+                ps.setLong(2, chainId);
+                return ps;
+            }
         });
     }
 
@@ -76,7 +71,7 @@ public class RefreshTokenService {
 
     public boolean chainValidById(long chainId) {
         String sql = "SELECT valid FROM refresh_token_chain WHERE refresh_token_chain_id = ?;";
-		boolean valid = jdbcTemplate.queryForObject(sql, Boolean.class, chainId);
+        boolean valid = jdbcTemplate.queryForObject(sql, Boolean.class, chainId);
         return valid;
     }
 
@@ -85,60 +80,50 @@ public class RefreshTokenService {
     }
 
     public long newRefreshTokenChain() {
-        String sql =
-			"INSERT INTO refresh_token_chain (valid)"
-				+ " VALUES (?);";
-		KeyHolder keyHolder = new GeneratedKeyHolder();
-		
-		jdbcTemplate.update(
-			new PreparedStatementCreator() {
-				public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-					PreparedStatement ps =
-						connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-					ps.setBoolean(1, true);
-					return ps;
-				}
-		},  keyHolder);
+        String sql = "INSERT INTO refresh_token_chain (valid)" + " VALUES (?);";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-		return keyHolder.getKey().longValue();
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ps.setBoolean(1, true);
+                return ps;
+            }
+        }, keyHolder);
+
+        return keyHolder.getKey().longValue();
     }
 
     public void add(RefreshToken refreshToken) {
-        String sql =
-			"INSERT INTO refresh_token (user_id, refresh_token_chain_id, token_string, expiration_time, permissions, valid)"
-				+ " VALUES (?, ?, ?, ?, ?, ?);";
-		KeyHolder keyHolder = new GeneratedKeyHolder();
-		
-		jdbcTemplate.update(
-			new PreparedStatementCreator() {
-				public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-					PreparedStatement ps =
-						connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                    ps.setLong(1, refreshToken.userId);
-                    ps.setLong(2, refreshToken.refreshTokenChainId);
-					ps.setString(3, refreshToken.tokenString);
-					ps.setLong(4, refreshToken.expirationTime);
-                    ps.setInt(5, refreshToken.permissions.ordinal());
-					ps.setBoolean(6, refreshToken.valid);
-					return ps;
-				}
-		},  keyHolder);
+        String sql = "INSERT INTO refresh_token (user_id, refresh_token_chain_id, token_string, expiration_time, permissions, valid)"
+                + " VALUES (?, ?, ?, ?, ?, ?);";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-		refreshToken.refreshTokenId = keyHolder.getKey().longValue();
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ps.setLong(1, refreshToken.userId);
+                ps.setLong(2, refreshToken.refreshTokenChainId);
+                ps.setString(3, refreshToken.tokenString);
+                ps.setLong(4, refreshToken.expirationTime);
+                ps.setInt(5, refreshToken.permissions.ordinal());
+                ps.setBoolean(6, refreshToken.valid);
+                return ps;
+            }
+        }, keyHolder);
+
+        refreshToken.refreshTokenId = keyHolder.getKey().longValue();
     }
 
     public void revokeById(long refreshTokenId) {
-        String sql = 
-            "UPDATE refresh_token SET valid = ? WHERE refresh_token_id = ?;";
-        jdbcTemplate.update(
-            new PreparedStatementCreator() {
-                public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-                    PreparedStatement ps =
-                        connection.prepareStatement(sql);
-                    ps.setBoolean(1, false);
-                    ps.setLong(2, refreshTokenId);
-                    return ps;
-                }
+        String sql = "UPDATE refresh_token SET valid = ? WHERE refresh_token_id = ?;";
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setBoolean(1, false);
+                ps.setLong(2, refreshTokenId);
+                return ps;
+            }
         });
     }
 

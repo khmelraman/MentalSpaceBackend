@@ -7,5 +7,5 @@ public class Enrollment {
     public Integer studentPreference;
 
     public Enrollment() {
-    }   
+    }
 }

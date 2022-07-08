@@ -15,28 +15,27 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // TODO: enable CSRF when done
-        // HttpSessionCsrfTokenRepository repository = new HttpSessionCsrfTokenRepository();
+        // HttpSessionCsrfTokenRepository repository = new
+        // HttpSessionCsrfTokenRepository();
         // repository.setParameterName("csrfToken");
         // http
-        //     .csrf()
-        //     .csrfTokenRepository(repository);
+        // .csrf()
+        // .csrfTokenRepository(repository);
         http.csrf().disable();
-		return http.build();
+        return http.build();
     }
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/api/v0/**")
-                    .allowedOrigins("https://dev-waffle-cone.probablyanasian.dev",
-                        "https://probablyanasian.stoplight.io/",
-                        "https://editor.swagger.io/")
-                    .allowCredentials(true)
-                    .allowedMethods("GET", "POST", "PATCH", "DELETE");
-			}
-		};
-	}
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/api/v0/**")
+                        .allowedOrigins("https://dev-waffle-cone.probablyanasian.dev",
+                                "https://probablyanasian.stoplight.io/", "https://editor.swagger.io/")
+                        .allowCredentials(true).allowedMethods("GET", "POST", "PATCH", "DELETE");
+            }
+        };
+    }
 
 }

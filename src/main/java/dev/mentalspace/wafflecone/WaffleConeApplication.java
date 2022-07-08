@@ -10,7 +10,7 @@ public class WaffleConeApplication {
 		SpringApplication.run(WaffleConeApplication.class, args);
 	}
 
-    public static void contextLoads() {
-        
-    }
+	public static void contextLoads() {
+
+	}
 }

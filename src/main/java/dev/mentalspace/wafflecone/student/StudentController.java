@@ -32,7 +32,7 @@ import dev.mentalspace.wafflecone.user.UserService;
 import dev.mentalspace.wafflecone.user.UserType;
 
 @RestController
-@RequestMapping(path={"/api/v0/student"})
+@RequestMapping(path = { "/api/v0/student" })
 public class StudentController {
 	@Autowired
 	AuthTokenService authTokenService;
@@ -41,17 +41,16 @@ public class StudentController {
 	@Autowired
 	StudentService studentService;
 
-	@PostMapping(path="", consumes={MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<String> registerStudent(
-		@RequestHeader("Authorization") String authApiKey,
-		@RequestBody Student registerStudentDetails) {
+	@PostMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<String> registerStudent(@RequestHeader("Authorization") String authApiKey,
+			@RequestBody Student registerStudentDetails) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
 			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 		}
 		User loggedInUser = userService.getById(authToken.userId);
-		
+
 		// negated logic for clarity
 		if (loggedInUser.type != UserType.STUDENT) {
 			JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
@@ -72,18 +71,14 @@ public class StudentController {
 		studentService.add(registerStudentDetails);
 		userService.updateStudent(loggedInUser, registerStudentDetails);
 
-		return ResponseEntity.status(HttpStatus.OK).body(
-			new Response("success")
-				.put("studentId", registerStudentDetails.studentId)
-				.toString()
-		);
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(new Response("success").put("studentId", registerStudentDetails.studentId).toString());
 	}
 
 	@GetMapping("")
-	public ResponseEntity<String> studentDetails(
-		@RequestHeader("Authorization") String authApiKey,
-		@RequestParam(value = "studentId", defaultValue = "-1") long searchStudentId,
-		@RequestParam(value = "canonicalId", defaultValue = "") String searchCanonicalId) {
+	public ResponseEntity<String> studentDetails(@RequestHeader("Authorization") String authApiKey,
+			@RequestParam(value = "studentId", defaultValue = "-1") long searchStudentId,
+			@RequestParam(value = "canonicalId", defaultValue = "") String searchCanonicalId) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
 			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -94,21 +89,17 @@ public class StudentController {
 		if ((searchStudentId == -1) && (searchCanonicalId.equals(""))) {
 			if (loggedInUser.type == UserType.STUDENT) {
 				Student student = studentService.getById(loggedInUser.studentId);
-				return ResponseEntity.status(HttpStatus.OK).body(
-					new Response("success")
-						.put("student", student.toJsonObject())
-						.toString()
-				);
+				return ResponseEntity.status(HttpStatus.OK)
+						.body(new Response("success").put("student", student.toJsonObject()).toString());
 			}
 		}
 		// TODO: implement student details by studentId and canonicalId
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
 	}
 
-	@PatchMapping(path = "", consumes={MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<String> patchStudent(
-		@RequestHeader("Authorization") String authApiKey,
-		@RequestBody Student patchDetails) {
+	@PatchMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<String> patchStudent(@RequestHeader("Authorization") String authApiKey,
+			@RequestBody Student patchDetails) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
 			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);

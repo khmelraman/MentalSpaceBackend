@@ -1,4 +1,4 @@
-package dev.mentalspace.wafflecone.databaseobject;
+package dev.mentalspace.wafflecone.subject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,63 +17,69 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @Repository
-public class EnrollmentService {
+public class SubjectService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public Enrollment getById(long id) {
-        String sql = "SELECT enrollment_id, student_id, period_id, student_preference FROM enrollment "
-                + "WHERE enrollment_id = ?;";
-        RowMapper<Enrollment> rowMapper = new EnrollmentRowMapper();
-        Enrollment enrollment = jdbcTemplate.queryForObject(sql, rowMapper, id);
-        return enrollment;
+    public Subject getById(long id) {
+        String sql = "SELECT subject_id, department, description, name FROM subject WHERE subject_id = ?;";
+        RowMapper<Subject> rowMapper = new SubjectRowMapper();
+        Subject subject = jdbcTemplate.queryForObject(sql, rowMapper, id);
+        return subject;
     }
 
-    public boolean isEnrolled(long studentId, long periodId) {
-        String sql = "SELECT COUNT(*) FROM enrollment WHERE student_id = ? AND period_id = ?;";
-        int count = jdbcTemplate.queryForObject(sql, Integer.class, studentId, periodId);
+    public boolean existsById(long id) {
+        String sql = "SELECT COUNT(*) FROM subject WHERE subject_id = ?;";
+        int count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != 0;
     }
 
-    public void addEnrollment(Enrollment enrollment) {
-        String sql = "INSERT INTO enrollment (student_id, period_id, student_preference) VALUES (?, ?, ?);";
+    public boolean existsBySubject(Subject subject) {
+        return existsById(subject.subjectId);
+    }
+
+    public void addSubject(Subject subject) {
+        String sql = "INSERT INTO subject (department, description, name) VALUES (?, ?, ?);";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(new PreparedStatementCreator() {
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                ps.setLong(1, enrollment.studentId);
-                ps.setLong(2, enrollment.periodId);
-                ps.setInt(3, enrollment.studentPreference);
+                ps.setString(1, subject.department);
+                ps.setString(2, subject.description);
+                ps.setString(3, subject.name);
                 return ps;
             }
         }, keyHolder);
 
-        enrollment.enrollmentId = keyHolder.getKey().longValue();
+        subject.subjectId = keyHolder.getKey().longValue();
     }
 
-    public void updateEnrollment(Enrollment enrollment) {
-        String sql = "UPDATE enrollment SET student_id = ?, period_id = ?, student_preference = ? "
-                + "WHERE enrollment_id = ?;";
+    public void updateSubject(Subject subject) {
+        String sql = "UPDATE subject SET department = ?, description = ?, name = ? WHERE subject_id = ?;";
         jdbcTemplate.update(new PreparedStatementCreator() {
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(sql);
-                ps.setLong(1, enrollment.studentId);
-                ps.setLong(2, enrollment.periodId);
-                ps.setInt(3, enrollment.studentPreference);
-                ps.setLong(4, enrollment.enrollmentId);
+                ps.setString(1, subject.department);
+                ps.setString(2, subject.department);
+                ps.setString(3, subject.description);
+                ps.setLong(4, subject.subjectId);
                 return ps;
             }
         });
     }
 
-    public void deleteEnrollment(Enrollment enrollment) {
-        String sql = "DELETE FROM enrollment WHERE enrollment_id = ?;";
+    public void deleteSubjectById(long subjectId) {
+        String sql = "DELETE FROM subject WHERE subject_id = ?;";
         jdbcTemplate.update(new PreparedStatementCreator() {
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(sql);
-                ps.setLong(1, enrollment.enrollmentId);
+                ps.setLong(1, subjectId);
                 return ps;
             }
         });
+    }
+
+    public void deleteSubject(Subject subject) {
+        deleteSubjectById(subject.subjectId);
     }
 }

@@ -29,7 +29,7 @@ import dev.mentalspace.wafflecone.response.ErrorString;
 import dev.mentalspace.wafflecone.response.Response;
 
 @RestController
-@RequestMapping(path={"/api/v0/user"})
+@RequestMapping(path = { "/api/v0/user" })
 public class UserController {
 	@Autowired
 	UserService userService;
@@ -39,47 +39,44 @@ public class UserController {
 	AuthTokenService authTokenService;
 
 	/**
-	 * Registration path, verifies that all parameters are met then creates user account.
-	 * Checks implmented:
-	 *   password: exist, length
-	 *   username: exist, collision
-	 *   email:    exist, collision
+	 * Registration path, verifies that all parameters are met then creates user
+	 * account. Checks implmented: password: exist, length username: exist,
+	 * collision email: exist, collision
 	 */
-	@PostMapping(path="/register", consumes={MediaType.APPLICATION_JSON_VALUE})
+	@PostMapping(path = "/register", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<String> userRegister(@RequestBody User registerDetails) {
 		// builder method of doing errors; that way all errors are caught at once
 		JSONObject errors = new JSONObject();
 		HttpStatus returnStatus = HttpStatus.OK; // used to check if error'd
 
-		//TODO: either frontend implements username, or we delete username properly
+		// TODO: either frontend implements username, or we delete username properly
 		// I'm keeping username functionality to keep within API spec though.
 		// registerDetails.username = registerDetails.email;
-		
+
 		// verification block refactor later into a monad or smth
 		if (Utils.isEmpty(registerDetails.password)) {
 			errors = errors.put("password", ErrorString.PASSWORD_EMPTY);
 			returnStatus = HttpStatus.BAD_REQUEST;
-		}
-		else if (registerDetails.password.length() < 8) {
+		} else if (registerDetails.password.length() < 8) {
 			errors = errors.put("password", ErrorString.PASSWORD_LENGTH);
 			returnStatus = HttpStatus.BAD_REQUEST;
 		}
 		if (Utils.isEmpty(registerDetails.email)) {
 			errors = errors.put("email", ErrorString.EMAIL_EMPTY);
 			returnStatus = HttpStatus.BAD_REQUEST;
-		}
-		else if (userService.existsByEmail(registerDetails.email)) {
+		} else if (userService.existsByEmail(registerDetails.email)) {
 			errors = errors.put("email", ErrorString.EMAIL_IN_USE);
 			returnStatus = HttpStatus.CONFLICT;
 		}
 		// Username can be empty due to PM and frontend not wanting to implement.
 		// if (Utils.isEmpty(registerDetails.username)) {
-		// 	errors = errors.put("username", ErrorString.USERNAME_EMPTY);
-		// 	returnStatus = HttpStatus.BAD_REQUEST;
+		// errors = errors.put("username", ErrorString.USERNAME_EMPTY);
+		// returnStatus = HttpStatus.BAD_REQUEST;
 		// }
-		// else 
+		// else
 
-		// Short circuit check that username field isn't empty first then make sure there's no collision
+		// Short circuit check that username field isn't empty first then make sure
+		// there's no collision
 		if (!Utils.isEmpty(registerDetails.username) && userService.existsByUsername(registerDetails.username)) {
 			errors = errors.put("username", ErrorString.USERNAME_IN_USE);
 			returnStatus = HttpStatus.CONFLICT;
@@ -93,18 +90,18 @@ public class UserController {
 		// add user to db
 		registerDetails.password = Utils.encodePassword(registerDetails.password);
 		userService.add(registerDetails);
-		
-		Response response = new Response("success").put("user_id", registerDetails.userId);
+
+		Response response = new Response("success").put("userId", registerDetails.userId);
 		return ResponseEntity.status(returnStatus).body(response.toString());
 	}
 
 	// check that the user exists and the password matches
 	// If so, create a new refresh token chain and access token
-	@PostMapping(path="/login", consumes={MediaType.APPLICATION_JSON_VALUE})
+	@PostMapping(path = "/login", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<String> userLogin(@RequestBody User loginDetails) {
 		User checkUser;
 		boolean userValid = false;
-	
+
 		if (!Utils.isEmpty(loginDetails.username) && userService.existsByUsername(loginDetails.username)) {
 			checkUser = userService.getByUsername(loginDetails.username);
 			if (Utils.matchesPassword(loginDetails.password, checkUser.password)) {
@@ -129,21 +126,20 @@ public class UserController {
 		if (userValid) {
 			long refreshTokenChainId = refreshTokenService.newRefreshTokenChain();
 			String rawRefreshApiKey = Utils.generateApiKey();
-			RefreshToken newRefreshToken = new RefreshToken(checkUser, AuthScope.FULL, rawRefreshApiKey, refreshTokenChainId);
+			RefreshToken newRefreshToken = new RefreshToken(checkUser, AuthScope.FULL, rawRefreshApiKey,
+					refreshTokenChainId);
 			HttpHeaders headers = new HttpHeaders();
 			RefreshToken.addCookieHeader(headers, rawRefreshApiKey);
 			refreshTokenService.add(newRefreshToken);
-	
+
 			AuthToken newAuthToken = new AuthToken();
 			String rawAuthApiKey = Utils.generateApiKey();
 			newAuthToken.loadUsingRefreshToken(newRefreshToken, rawAuthApiKey);
 			authTokenService.add(newAuthToken);
-	
-			Response response = new Response("success")
-				.put("userId", checkUser.userId)
-				.put("accessToken", rawAuthApiKey)
-				.put("accessTokenExpiry", newAuthToken.expirationTime)
-				.put("refreshTokenExpiry", newRefreshToken.expirationTime);
+
+			Response response = new Response("success").put("userId", checkUser.userId)
+					.put("accessToken", rawAuthApiKey).put("accessTokenExpiry", newAuthToken.expirationTime)
+					.put("refreshTokenExpiry", newRefreshToken.expirationTime);
 			return ResponseEntity.status(HttpStatus.OK).headers(headers).body(response.toString());
 		}
 		WaffleConeController.logger.error("USER LOGIN UNREACHABLE CODE REACHED");
@@ -152,8 +148,7 @@ public class UserController {
 	}
 
 	@PostMapping("/logout")
-	public ResponseEntity<String> userLogout(
-		@RequestHeader("Authorization") String authApiKey) {
+	public ResponseEntity<String> userLogout(@RequestHeader("Authorization") String authApiKey) {
 
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
@@ -167,10 +162,9 @@ public class UserController {
 	}
 
 	@GetMapping("")
-	public ResponseEntity<String> getUserDetails(
-		@RequestHeader("Authorization") String authApiKey, 
-		@RequestParam(value = "userId", defaultValue = "-1") long searchUserId,
-		@RequestParam(value = "canonicalId", defaultValue = "") String searchCanonicalId) {
+	public ResponseEntity<String> getUserDetails(@RequestHeader("Authorization") String authApiKey,
+			@RequestParam(value = "userId", defaultValue = "-1") long searchUserId,
+			@RequestParam(value = "canonicalId", defaultValue = "") String searchCanonicalId) {
 
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
@@ -183,15 +177,14 @@ public class UserController {
 			Response response = new Response("success").put("user", loggedInUser.toJsonObject());
 			return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 		}
-		
+
 		// TODO: Implement searching by IDs
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not Implemented Yet.");
 	}
 
-	@PatchMapping(path = "", consumes={MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<String> patchUser(
-		@RequestHeader("Authorization") String authApiKey,
-		@RequestBody User patchDetails) {
+	@PatchMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<String> patchUser(@RequestHeader("Authorization") String authApiKey,
+			@RequestBody User patchDetails) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
 			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -213,7 +206,8 @@ public class UserController {
 			errors = errors.put("email", ErrorString.EMAIL_IN_USE);
 			returnStatus = HttpStatus.CONFLICT;
 		}
-		if (userService.existsByUsername(patchDetails.username) && !loggedInUser.username.equals(patchDetails.username)) {
+		if (userService.existsByUsername(patchDetails.username)
+				&& !loggedInUser.username.equals(patchDetails.username)) {
 			errors = errors.put("username", ErrorString.USERNAME_IN_USE);
 			returnStatus = HttpStatus.CONFLICT;
 		}
@@ -228,14 +222,13 @@ public class UserController {
 
 		loggedInUser.updateDetails(patchDetails);
 		userService.updateUser(loggedInUser);
-		
+
 		return ResponseEntity.status(returnStatus).body(new Response("success").toString());
 	}
 
-	@DeleteMapping(path = "", consumes={MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<String> deleteUser(
-		@RequestHeader("Authorization") String authApiKey,
-		@RequestBody User deleteDetails) {
+	@PostMapping(path = "/delete", consumes = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String authApiKey,
+			@RequestBody User deleteDetails) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
 			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);

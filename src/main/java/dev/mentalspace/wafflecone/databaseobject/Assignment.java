@@ -11,5 +11,5 @@ public class Assignment {
     public String description;
 
     public Assignment() {
-    }  
+    }
 }

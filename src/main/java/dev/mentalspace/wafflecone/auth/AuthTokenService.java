@@ -20,21 +20,19 @@ import dev.mentalspace.wafflecone.WaffleConeController;
 @Transactional
 @Repository
 public class AuthTokenService {
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     // get authtoken by id, idk why this would ever be used.
     public AuthToken getById(Long id) {
-        String sql = 
-            "SELECT auth_token_id, user_id, token_string, expiration_time, valid, permissions FROM auth_token WHERE auth_token_id = ?;";
+        String sql = "SELECT auth_token_id, user_id, token_string, expiration_time, valid, permissions FROM auth_token WHERE auth_token_id = ?;";
         RowMapper<AuthToken> rowMapper = new AuthTokenRowMapper();
         AuthToken authToken = jdbcTemplate.queryForObject(sql, rowMapper, id);
         return authToken;
     }
 
     public AuthToken getBySha256Hash(String hashedKey) {
-        String sql = 
-            "SELECT auth_token_id, user_id, token_string, expiration_time, valid, permissions FROM auth_token WHERE token_string = ?;";
+        String sql = "SELECT auth_token_id, user_id, token_string, expiration_time, valid, permissions FROM auth_token WHERE token_string = ?;";
         RowMapper<AuthToken> rowMapper = new AuthTokenRowMapper();
         AuthToken authToken = jdbcTemplate.queryForObject(sql, rowMapper, hashedKey);
         return authToken;
@@ -57,46 +55,40 @@ public class AuthTokenService {
     }
 
     public void add(AuthToken authToken) {
-        String sql =
-			"INSERT INTO auth_token (user_id, refresh_token_chain_id, token_string, expiration_time, valid, permissions)"
-				+ " VALUES (?, ?, ?, ?, ?, ?);";
-		KeyHolder keyHolder = new GeneratedKeyHolder();
-		
-		jdbcTemplate.update(
-			new PreparedStatementCreator() {
-				public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-					PreparedStatement ps =
-						connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-					ps.setLong(1, authToken.userId);
-                    ps.setLong(2, authToken.refreshTokenChainId);
-					ps.setString(3, authToken.tokenString);
-					ps.setLong(4, authToken.expirationTime);
-					ps.setBoolean(5, authToken.valid);
-					ps.setInt(6, authToken.permissions.ordinal());
-					return ps;
-				}
-		},  keyHolder);
+        String sql = "INSERT INTO auth_token (user_id, refresh_token_chain_id, token_string, expiration_time, valid, permissions)"
+                + " VALUES (?, ?, ?, ?, ?, ?);";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-		authToken.authTokenId = keyHolder.getKey().longValue();
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ps.setLong(1, authToken.userId);
+                ps.setLong(2, authToken.refreshTokenChainId);
+                ps.setString(3, authToken.tokenString);
+                ps.setLong(4, authToken.expirationTime);
+                ps.setBoolean(5, authToken.valid);
+                ps.setInt(6, authToken.permissions.ordinal());
+                return ps;
+            }
+        }, keyHolder);
+
+        authToken.authTokenId = keyHolder.getKey().longValue();
     }
 
     public void revokeByToken(AuthToken authToken) {
-        String sql =
-        "UPDATE auth_token SET valid = ? WHERE token_string = ?;";
-        
-        jdbcTemplate.update(
-            new PreparedStatementCreator() {
-                public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-                    PreparedStatement ps =
-                        connection.prepareStatement(sql);
-                    ps.setBoolean(1, false);
-                    ps.setString(2, authToken.tokenString);
-                    return ps;
-                }
+        String sql = "UPDATE auth_token SET valid = ? WHERE token_string = ?;";
+
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setBoolean(1, false);
+                ps.setString(2, authToken.tokenString);
+                return ps;
+            }
         });
 
     }
-    
+
     // Check that the key is valid
     // Check "valid" and expiration time
     public AuthToken verifyKey(String apiKey) {
