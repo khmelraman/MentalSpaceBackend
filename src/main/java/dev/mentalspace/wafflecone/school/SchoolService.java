@@ -1,10 +1,10 @@
-package dev.mentalspace.wafflecone.databaseobject;
+package dev.mentalspace.wafflecone.school;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-//import java.util.List;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,11 +15,19 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.mentalspace.wafflecone.todo.TodoRowMapper;
+
 @Transactional
 @Repository
 public class SchoolService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    public boolean existsById(Long id) {
+		String sql = "SELECT COUNT(*) FROM school WHERE school_id = ?;";
+		int count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+		return count != 0;
+	} 
 
     public School getById(long id) {
         String sql = "SELECT school_id, short_name, name, address FROM school WHERE school_id = ?;";
@@ -42,6 +50,13 @@ public class SchoolService {
         }, keyHolder);
 
         school.schoolId = keyHolder.getKey().longValue();
+    }
+
+    public List<School> allSchool() {
+        String sql = "SELECT school_id, short_name, name, address FROM school;";
+        RowMapper<School> rowMapper = new SchoolRowMapper();
+        List<School> schools = jdbcTemplate.query(sql, rowMapper);
+        return schools;
     }
 
     public void updateSchool(School school) {

@@ -1,5 +1,7 @@
 package dev.mentalspace.wafflecone.response;
 
+import java.util.List;
+
 import org.json.JSONObject;
 
 /**
@@ -27,6 +29,11 @@ public class Response {
 	}
 
 	public Response put(String key, JSONObject value) {
+		this.response.put(key, value);
+		return this;
+	}
+
+	public <T> Response put(String key, List<T> value) {
 		this.response.put(key, value);
 		return this;
 	}

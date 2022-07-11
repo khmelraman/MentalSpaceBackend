@@ -1,4 +1,4 @@
-package dev.mentalspace.wafflecone.databaseobject;
+package dev.mentalspace.wafflecone.assignment;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,6 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class AssignmentService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    public boolean existsById(Long id) {
+        String sql = "SELECT COUNT(*) FROM assignment WHERE assignment_id = ?;";
+		int count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+		return count != 0;
+    }
 
     public Assignment getById(long id) {
         String sql = "SELECT assignment_id, period_id, date_assigned, date_due, type, estimated_burden, name, description "
