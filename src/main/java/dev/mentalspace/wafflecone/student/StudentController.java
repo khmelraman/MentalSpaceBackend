@@ -114,7 +114,7 @@ public class StudentController {
 
 		if (patchDetails.studentId == null || patchDetails.studentId <= 0) {
 			Student loggedInStudent = studentService.getById(loggedInUser.studentId);
-			loggedInStudent.updateStudent(patchDetails);
+			loggedInStudent.updateDetails(patchDetails);
 			studentService.updateStudent(loggedInStudent);
 			return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
 		}

@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +48,7 @@ public class PeriodController {
     @Autowired
     EnrollmentService enrollmentService;
 
-    @PostMapping(path = { "" })
+    @PostMapping(path = { "" }, consumes = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<String> createPeriod(@RequestHeader("Authorization") String authApiKey,
             @RequestBody Period createDetails) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
@@ -92,13 +93,8 @@ public class PeriodController {
                         .body(new Response("success").put("class", period.toJsonObject()).toString());
             } else {
                 return ResponseEntity.status(HttpStatus.OK)
-                        .body(new Response("success").put("class", period.toJsonObject().put("classCode", "")) // Scrub
-                                                                                                               // the
-                                                                                                               // class
-                                                                                                               // code
-                                                                                                               // if
-                                                                                                               // non-owning
-                                                                                                               // teacher
+                        // Scrub the class code if non-owning teacher
+                        .body(new Response("success").put("class", period.toJsonObject().put("classCode", ""))
                                 .toString());
             }
         } else if (loggedInUser.type == UserType.STUDENT) {
@@ -106,26 +102,93 @@ public class PeriodController {
             if (enrollmentService.isEnrolled(loggedInUser.studentId, searchPeriodId)) {
                 Period period = periodService.getById(searchPeriodId);
                 return ResponseEntity.status(HttpStatus.OK)
-                        .body(new Response("success").put("class", period.toJsonObject().put("classCode", "")) // Scrub
-                                                                                                               // the
-                                                                                                               // class
-                                                                                                               // code
-                                                                                                               // if
-                                                                                                               // student
-                                                                                                               // is
-                                                                                                               // fetching
-                                                                                                               // this
-                                                                                                               // information
+                        // Scrub the class code if student is fetching
+                        .body(new Response("success").put("class", period.toJsonObject().put("classCode", ""))
                                 .toString());
             } else {
                 JSONObject errors = new JSONObject().put("classId", ErrorString.INVALID_ID);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString()); // 404
-                                                                                                               // for
-                                                                                                               // "confidentiality"
+                // 404 for "confidentiality"
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
             }
         }
 
-        // TODO: Implement
+        // TODO: Implement Admin stuff
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not Implemented Yet.");
+    }
+
+    @PatchMapping(path = {""}, consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<String> patchPeriod(
+        @RequestHeader("Authorization") String authApiKey,
+        @RequestBody Period patchDetails) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (!periodService.existsById(patchDetails.periodId)) {
+            JSONObject errors = new JSONObject().put("periodId", ErrorString.PERIOD_NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+        }
+        
+        Period period = periodService.getById(patchDetails.periodId);
+
+        period.updateDetails(patchDetails);
+        if (patchDetails.regenerateClassCode) {
+            String newCode = Utils.generateApiKey().substring(0,6);
+            // 10 times should hopefully be enough to get a unique class code
+            boolean changed = false;
+            for (int i = 0; i <= 10; i++) {
+                if (!periodService.existsByClassCode(newCode)) {
+                    period.classCode = newCode;
+                    changed = true;
+                    break;
+                }
+            }
+            if (!changed) {
+                WaffleConeController.logger.error("Class Code was not changed when it should have been");
+                JSONObject errors = new JSONObject().put("regenerateClassCode", ErrorString.COULD_NOT_REGENERATE_CLASS_CODE);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(errors).toString());
+            }
+        }
+        periodService.updatePeriod(period);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());    
+    }
+
+    @DeleteMapping(path = {""})
+    public ResponseEntity<String> deletePeriod(
+        @RequestHeader("Authorization") String authApiKey,
+        @RequestParam(value = "classId", defaultValue = "-1") Long deletePeriodId) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (!periodService.existsById(deletePeriodId)) {
+            JSONObject errors = new JSONObject().put("periodId", ErrorString.PERIOD_NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+        }
+        if (loggedInUser.type != UserType.TEACHER) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+        }
+        if (loggedInUser.type == UserType.ADMIN) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
+        }
+
+        Period period = periodService.getById(deletePeriodId);
+        
+        if (loggedInUser.teacherId != period.teacherId) {
+            JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+        }
+
+        periodService.deletePeriod(period);
+
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
     }
 }

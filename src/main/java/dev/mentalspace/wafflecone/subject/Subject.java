@@ -27,8 +27,11 @@ public class Subject {
 
     // Used only for response output.
     public JSONObject toJsonObject() {
-        JSONObject jsonObj = new JSONObject().put("subjectId", this.subjectId).put("department", this.department)
-                .put("name", this.name).put("description", this.description);
+        JSONObject jsonObj = new JSONObject()
+            .put("subjectId", this.subjectId)
+            .put("department", this.department)
+            .put("name", this.name)
+            .put("description", this.description);
         return jsonObj;
     }
 }

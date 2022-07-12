@@ -81,9 +81,11 @@ public class AuthController {
         newAuthToken.loadUsingRefreshToken(newRefreshToken, rawAuthApiKey);
         authTokenService.add(newAuthToken);
 
-        Response response = new Response("success").put("userId", newRefreshToken.userId)
-                .put("accessToken", rawAuthApiKey).put("accessTokenExpiry", newAuthToken.expirationTime)
-                .put("refreshTokenExpiry", newRefreshToken.expirationTime);
+        Response response = new Response("success")
+            .put("userId", newRefreshToken.userId)
+            .put("accessToken", rawAuthApiKey)
+            .put("accessTokenExpiry", newAuthToken.expirationTime)
+            .put("refreshTokenExpiry", newRefreshToken.expirationTime);
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(response.toString());
     }
 }

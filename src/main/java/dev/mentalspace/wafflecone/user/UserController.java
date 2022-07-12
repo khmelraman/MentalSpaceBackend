@@ -137,7 +137,7 @@ public class UserController {
 			newAuthToken.loadUsingRefreshToken(newRefreshToken, rawAuthApiKey);
 			authTokenService.add(newAuthToken);
 
-			Response response = new Response("success").put("userId", checkUser.userId)
+			Response response = new Response("success").put("user", checkUser.toJsonObject())
 					.put("accessToken", rawAuthApiKey).put("accessTokenExpiry", newAuthToken.expirationTime)
 					.put("refreshTokenExpiry", newRefreshToken.expirationTime);
 			return ResponseEntity.status(HttpStatus.OK).headers(headers).body(response.toString());

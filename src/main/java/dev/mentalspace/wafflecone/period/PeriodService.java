@@ -27,6 +27,12 @@ public class PeriodService {
         return count != 0;
     }
 
+    public boolean existsByClassCode(String code) {
+        String sql = "SELECT COUNT(*) FROM period WHERE period_id = ?;";
+        int count = jdbcTemplate.queryForObject(sql, Integer.class, code);
+        return count != 0;
+    }
+
     public Period getById(long id) {
         String sql = "SELECT period_id, teacher_id, subject_id, period, class_code, archived FROM period "
                 + "WHERE period_id = ?;";

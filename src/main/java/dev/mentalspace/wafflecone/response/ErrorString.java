@@ -33,6 +33,10 @@ public class ErrorString {
 	public static final String NAME_EMPTY = emptyString("name");
 	public static final String SUBJECT_NOT_FOUND = notFound("subjectId");
 
+	public static final String PERIOD_NOT_FOUND = notFound("period");
+	public static final String COULD_NOT_REGENERATE_CLASS_CODE = "The server could not regenerate the class code, please try again";
+	public static final String OWNERSHIP = "You do not own this resource";
+
 	public static String inUseString(String field) {
 		return field + " is already in use";
 	}
