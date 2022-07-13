@@ -6,12 +6,15 @@ import dev.mentalspace.wafflecone.auth.AuthToken;
 import dev.mentalspace.wafflecone.auth.AuthScope;
 import dev.mentalspace.wafflecone.auth.AuthTokenService;
 
+import java.util.List;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.concurrent.SuccessCallback;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException.NotFound;
 
 import dev.mentalspace.wafflecone.response.*;
 import dev.mentalspace.wafflecone.user.*;
@@ -29,6 +33,7 @@ import dev.mentalspace.wafflecone.todo.*;
 import dev.mentalspace.wafflecone.assignment.*;
 // TODO: when enrollment service moves to /enrollment/* change */
 import dev.mentalspace.wafflecone.databaseobject.*;
+import dev.mentalspace.wafflecone.period.Period;
 import dev.mentalspace.wafflecone.period.PeriodService;
 
 @RestController
@@ -49,7 +54,7 @@ public class AssignmentController {
     @Autowired
     PeriodService periodService;
 
-    @GetMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    @GetMapping(path = "")
     public ResponseEntity<String> getTodo(
     	@RequestHeader("Authorization") String authApiKey, 
     	@RequestParam(value = "assignment", defaultValue = "-1") Long searchAssignmentId) {
@@ -83,5 +88,59 @@ public class AssignmentController {
 
         Response response = new Response("success").put("assignment", assignment.toJsonObject());
         return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+    }
+
+    @PostMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<String> createAssignment(
+        @RequestHeader("Authorization") String authApiKey,
+        @RequestBody Assignment createAssignment
+    ) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (loggedInUser.type != UserType.TEACHER) {
+            JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+
+        JSONObject errors = new JSONObject();
+        HttpStatus returnStatus = HttpStatus.OK;
+
+        if (!periodService.existsById(createAssignment.periodId)) {
+            errors.put("classId", ErrorString.notFound("classId"));
+            returnStatus = HttpStatus.BAD_REQUEST;
+        }
+        if (createAssignment.dateDue == null) {
+            errors.put("dateDue", ErrorString.notFound("dateDue"));
+            returnStatus = HttpStatus.BAD_REQUEST;
+        }
+        if (createAssignment.estimatedBurden == null) {
+            errors.put("estimatedBurden", ErrorString.notFound("estimatedBurden"));
+            returnStatus = HttpStatus.BAD_REQUEST;
+        }
+        if (Utils.isEmpty(createAssignment.name)) {
+            errors.put("name", ErrorString.notFound("name"));
+            returnStatus = HttpStatus.BAD_REQUEST;
+        }
+
+        Period period = periodService.getById(createAssignment.periodId);
+        if (period.teacherId != loggedInUser.teacherId) {
+            errors = new JSONObject().put("periodId", ErrorString.OWNERSHIP);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+        }
+
+        assignmentService.addAssignment(createAssignment);
+        List<Enrollment> studentEnrollments = enrollmentService.getEnrollmentsByPeriodId(createAssignment.periodId);
+        workService.batchAddWorkByEnrollmentsAndAssignment(studentEnrollments, createAssignment);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+            new Response("success")
+                .put("assignmentId", createAssignment.assignmentId)
+                .toString()
+        );
     }
 }

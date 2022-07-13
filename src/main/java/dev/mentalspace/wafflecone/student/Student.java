@@ -7,6 +7,7 @@ import dev.mentalspace.wafflecone.Utils;
 public class Student {
     public Long studentId;
     public String canonicalId;
+    public Long preferenceId;
     public String firstName;
     public String lastName;
     public Long phone;

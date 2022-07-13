@@ -111,8 +111,15 @@ public class StudentController {
 						.body(new Response("success").put("student", student.toJsonObject()).toString());
 			}
 		}
-
+		
 		// TODO: debate whether any account should view any student that they want
+		
+		// only allow non-student to view others
+		if (loggedInUser.type == UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+
 
 		if (searchStudentId == -1) {
 			if (!studentService.existsByCanonicalId(searchCanonicalId)) {
@@ -152,7 +159,7 @@ public class StudentController {
 			return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
 		}
 
-		// TODO: Implement modify other people's account(s)
+		// TODO: Implement modify other people's account(s) when teacher
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not Implemented Yet.");
 	}
 
@@ -228,6 +235,8 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
 		}
 
+
+		//TODO: debate on letting teachers see student preference
 		studentId = loggedInUser.studentId;
 
 		Preference preference = preferenceService.getByStudentId(studentId);
@@ -252,6 +261,8 @@ public class StudentController {
 		}
 
         Preference dbpreference = preferenceService.getByStudentId(loggedInUser.studentId);
+
+		//TODO: refactor.
 		preference.preferenceId = dbpreference.preferenceId;
 		preference.studentId = dbpreference.studentId;
 		if (preference.assignmentOrder == null) {
@@ -291,7 +302,7 @@ public class StudentController {
 		studentId = loggedInUser.studentId;
 
 		List<Work> works = workService.getByStudentId(studentId, outstanding);
-		Response response = new Response().put("works", works);
+		Response response = new Response().put("work", works);
 		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 	}
 
@@ -313,7 +324,7 @@ public class StudentController {
 		}
 	
 		List<Todo> todos = todoService.getByStudentId(studentId, startDate, endDate);
-		Response response = new Response().put("works", todos);
+		Response response = new Response().put("todos", todos);
 		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 	}
 }

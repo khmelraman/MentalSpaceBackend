@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.mentalspace.wafflecone.response.ErrorResponse;
 import dev.mentalspace.wafflecone.response.ErrorString;
 import dev.mentalspace.wafflecone.response.Response;
+import dev.mentalspace.wafflecone.subject.SubjectService;
 import dev.mentalspace.wafflecone.user.User;
 import dev.mentalspace.wafflecone.user.UserService;
 import dev.mentalspace.wafflecone.user.UserType;
@@ -47,6 +48,8 @@ public class PeriodController {
     PeriodService periodService;
     @Autowired
     EnrollmentService enrollmentService;
+    @Autowired
+    SubjectService subjectService;
 
     @PostMapping(path = { "" }, consumes = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<String> createPeriod(@RequestHeader("Authorization") String authApiKey,
@@ -64,8 +67,24 @@ public class PeriodController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
         }
 
-        // TODO: implement period checks and creation
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
+        if (!subjectService.existsById(createDetails.subjectId)) {
+            JSONObject errors = new JSONObject().put("subjectId", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        if (createDetails.period == null) {
+            JSONObject errors = new JSONObject().put("period", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
+        }
+
+        createDetails.classCode = Utils.generateApiKey().substring(0,6);
+
+        periodService.addPeriod(createDetails);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+            new Response("success")
+                .put("periodId", createDetails.periodId)
+                .toString()
+        );
     }
 
     @GetMapping(path = { "" })

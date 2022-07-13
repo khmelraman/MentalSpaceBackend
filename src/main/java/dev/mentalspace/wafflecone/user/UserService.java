@@ -70,6 +70,12 @@ public class UserService {
 		return count != 0;
 	}
 
+	public boolean existsById(Long userId) {
+		String sql = "SELECT COUNT(*) FROM user WHERE user_id = ?;";
+		int count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+		return count != 0;
+	}
+
 	public void add(User user) {
 		String sql = "INSERT INTO user (type, username, email, email_verified, password)" + " VALUES (?, ?, ?, ?, ?);";
 		KeyHolder keyHolder = new GeneratedKeyHolder();

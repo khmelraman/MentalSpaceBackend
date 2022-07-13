@@ -44,7 +44,8 @@ public class TeacherService {
 				ps.setString(2, teacher.firstName);
 				ps.setString(3, teacher.lastName);
 				ps.setLong(4, teacher.phone);
-				ps.setString(5, teacher.department);
+				// TODO: more debate on department
+				ps.setString(5, ""); // teacher.department);
 				ps.setLong(6, teacher.teacherId);
 				return ps;
 			}

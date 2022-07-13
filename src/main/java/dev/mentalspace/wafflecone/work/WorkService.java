@@ -17,6 +17,9 @@ import org.springframework.jdbc.core.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.mentalspace.wafflecone.assignment.Assignment;
+import dev.mentalspace.wafflecone.databaseobject.Enrollment;
+
 @Transactional
 @Repository
 public class WorkService {
@@ -95,25 +98,27 @@ public class WorkService {
         });
     }
 
-    // public int[] batchAddWork(List<Work> works) {
-    //     KeyHolder keyHolder = new GeneratedKeyHolder();
-    //     int[] addCounts = jdbcTemplate.batchUpdate(
-    //         "INSERT INTO work (student_id, assignment_id, remaining_time, priority) VALUES (?, ?, ?, ?);", 
-    //         new BatchPreparedStatementSetter() {
-    //             public void setValues(PreparedStatement ps, int i) throws SQLException {
-    //                 ps.setLong(1, works.get(i).studentId);
-    //                 ps.setLong(2, works.get(i).assignmentId);
-    //                 ps.setLong(3, works.get(i).remainingTime);
-    //                 ps.setInt (4, works.get(i).priority);
-    //             }
-
-    //             public int getBatchSize() {
-    //                 return works.size();
-    //             }
-    //         }
-    //     );
-    //     return addCounts;
-    // }
+    public int[] batchAddWorkByEnrollmentsAndAssignment(List<Enrollment> enrollments, Assignment assignment) {
+        // KeyHolder keyHolder = new GeneratedKeyHolder();
+        int[] addCounts = jdbcTemplate.batchUpdate(
+            "INSERT INTO work (student_id, assignment_id, remaining_time, priority) VALUES (?, ?, ?, ?);", 
+            new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    Enrollment enrollment = enrollments.get(i);
+                    ps.setLong(1, enrollment.studentId);
+                    ps.setLong(2, assignment.assignmentId);
+                    ps.setLong(3, assignment.estimatedBurden);
+                    ps.setInt (4, 0);
+                }
+                @Override
+                public int getBatchSize() {
+                    return enrollments.size();
+                }
+            }
+        );
+        return addCounts;
+    }
 
     public void deleteWork(Work work) {
         String sql = "DELETE FROM work WHERE work_id = ?;";

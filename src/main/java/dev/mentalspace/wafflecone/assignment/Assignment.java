@@ -2,8 +2,11 @@ package dev.mentalspace.wafflecone.assignment;
 
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Assignment {
     public Long assignmentId;
+    @JsonProperty("classId")
     public Long periodId;
     public Long dateAssigned;
     public Long dateDue;
@@ -11,9 +14,6 @@ public class Assignment {
     public Long estimatedBurden;
     public String name;
     public String description;
-
-    public Assignment() {
-    }
 
     public JSONObject toJsonObject() {
         JSONObject jsonObject = new JSONObject();

@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 //import java.util.List;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -27,6 +28,14 @@ public class EnrollmentService {
         RowMapper<Enrollment> rowMapper = new EnrollmentRowMapper();
         Enrollment enrollment = jdbcTemplate.queryForObject(sql, rowMapper, id);
         return enrollment;
+    }
+
+    public List<Enrollment> getEnrollmentsByPeriodId(long periodId) {
+        String sql = "SELECT work_id, student_id, assignment_id, remaining_time, priority FROM work "
+                + "WHERE assignment_id = ?;";
+        RowMapper<Enrollment> rowMapper = new EnrollmentRowMapper();
+        List<Enrollment> enrollments = jdbcTemplate.query(sql, rowMapper, periodId);
+        return enrollments;
     }
 
     public boolean isEnrolled(long studentId, long periodId) {

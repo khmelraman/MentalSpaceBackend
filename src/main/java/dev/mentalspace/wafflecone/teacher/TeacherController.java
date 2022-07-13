@@ -95,6 +95,16 @@ public class TeacherController {
 						.body(new Response("success").put("teacher", teacher.toJsonObject()).toString());
 			}
 		}
+
+		if (loggedInUser.type == UserType.TEACHER) {
+			if (!teacherService.existsById(searchTeacherId)) {
+				JSONObject errors = new JSONObject().put("teacherId", ErrorString.INVALID_ID);
+           		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+			}
+			Teacher teacher = teacherService.getById(searchTeacherId);
+				return ResponseEntity.status(HttpStatus.OK)
+						.body(new Response("success").put("teacher", teacher.toJsonObject()).toString());
+		}
 		// TODO: implement teacher details by teacherId and canonicalId
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
 	}
