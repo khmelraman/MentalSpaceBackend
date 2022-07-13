@@ -57,6 +57,15 @@ public class TodoService {
         return todos;
     }
 
+    public List<Todo> getByStudentId(long id, long start, long end) {
+        String sql = "SELECT todo_id, work_id, date, planned_time, projected_start_time, priority "
+                + "FROM todo JOIN work ON todo.work_id = work.work_id WHERE student_id = ?" + 
+                (start <= 0 ? "" : " AND date >= " + String.valueOf(start)) + (end <= 0 ? "" : " AND date <= " + String.valueOf(end)) + ";";
+        RowMapper<Todo> rowMapper = new TodoRowMapper();
+        List<Todo> todos = jdbcTemplate.query(sql, rowMapper, id);
+        return todos;
+    }
+
     public List<Todo> getByWorkIdAndStudentId(long work, long student) {
         String sql = "SELECT todo_id, work_id, date, planned_time, projected_start_time, priority "
                 + "FROM todo JOIN work ON todo.work_id = work.work_id WHERE work_id = ? AND student_id = ?;";

@@ -29,7 +29,20 @@ public class StudentService {
 		return student;
 	}
 
+	public Student getByCanonicalId(String id) {
+		String sql = "SELECT student_id, canonical_id, first_name, last_name, phone, grade FROM student WHERE canonical_id = ?;";
+		RowMapper<Student> rowMapper = new StudentRowMapper();
+		Student student = jdbcTemplate.queryForObject(sql, rowMapper, id);
+		return student;
+	}
+
 	public boolean existsById(long id) {
+		String sql = "SELECT COUNT(*) FROM student WHERE student_id = ?;";
+		int count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+		return count != 0;
+	}
+
+	public boolean existsByCanonicalId(String id) {
 		String sql = "SELECT COUNT(*) FROM student WHERE student_id = ?;";
 		int count = jdbcTemplate.queryForObject(sql, Integer.class, id);
 		return count != 0;

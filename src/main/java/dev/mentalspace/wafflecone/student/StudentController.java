@@ -7,6 +7,9 @@ import dev.mentalspace.wafflecone.auth.AuthScope;
 import dev.mentalspace.wafflecone.auth.AuthTokenService;
 import dev.mentalspace.wafflecone.auth.RefreshToken;
 import dev.mentalspace.wafflecone.auth.RefreshTokenService;
+import dev.mentalspace.wafflecone.event.EventService;
+
+import java.util.List;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,11 @@ import dev.mentalspace.wafflecone.response.Response;
 import dev.mentalspace.wafflecone.user.User;
 import dev.mentalspace.wafflecone.user.UserService;
 import dev.mentalspace.wafflecone.user.UserType;
+import dev.mentalspace.wafflecone.period.*;
+import dev.mentalspace.wafflecone.event.*;
+import dev.mentalspace.wafflecone.todo.*;
+import dev.mentalspace.wafflecone.work.*;
+import dev.mentalspace.wafflecone.databaseobject.*;
 
 @RestController
 @RequestMapping(path = { "/api/v0/student" })
@@ -40,6 +48,16 @@ public class StudentController {
 	UserService userService;
 	@Autowired
 	StudentService studentService;
+	@Autowired
+	PeriodService periodService;
+	@Autowired
+	EventService eventService;
+	@Autowired
+	PreferenceService preferenceService;
+	@Autowired
+	TodoService todoService;
+	@Autowired
+	WorkService workService;
 
 	@PostMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<String> registerStudent(@RequestHeader("Authorization") String authApiKey,
@@ -93,8 +111,23 @@ public class StudentController {
 						.body(new Response("success").put("student", student.toJsonObject()).toString());
 			}
 		}
-		// TODO: implement student details by studentId and canonicalId
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
+
+		// TODO: debate whether any account should view any student that they want
+
+		if (searchStudentId == -1) {
+			if (!studentService.existsByCanonicalId(searchCanonicalId)) {
+				JSONObject errors = new JSONObject().put("canonicalId", ErrorString.INVALID_ID);
+            	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
+			}
+			Response response = new Response("success").put("student", studentService.getByCanonicalId(searchCanonicalId).toJsonObject());
+			return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+		}
+		if (!studentService.existsById(searchStudentId)) {
+			JSONObject errors = new JSONObject().put("canonicalId", ErrorString.INVALID_ID);
+        	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
+		}
+		Response response = new Response("success").put("student", studentService.getById(searchStudentId).toJsonObject());
+		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 	}
 
 	@PatchMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
@@ -121,5 +154,166 @@ public class StudentController {
 
 		// TODO: Implement modify other people's account(s)
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not Implemented Yet.");
+	}
+
+	@GetMapping(path = "/classes")
+	public ResponseEntity<String> getClasses(@RequestHeader("Authorization") String authApiKey,
+		@RequestParam(value = "archived", defaultValue = "false") Boolean archived,
+		@RequestParam(value = "canonicalId", defaultValue = "")  String canonicalId,
+		@RequestParam(value = "studentId", defaultValue = "-1")  Long studentId) {
+		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+		if (!authToken.valid) {
+			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+		User loggedInUser = userService.getById(authToken.userId);
+
+		if(!studentService.existsById(studentId)) {
+			if (!studentService.existsByCanonicalId(canonicalId)) {
+				if (loggedInUser.type == UserType.STUDENT) {
+					studentId = loggedInUser.studentId;
+				} else {
+					JSONObject errors = new JSONObject().put("studentId", ErrorString.INVALID_ID);
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
+				}
+			}
+			studentId = studentService.getByCanonicalId(canonicalId).studentId;
+		}
+
+		if (loggedInUser.type == UserType.TEACHER || loggedInUser.type == UserType.ADMIN) {
+			List<Period> classes = periodService.getByStudentId(studentId, archived);
+			Response response = new Response().put("classes", classes);
+			return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+        }
+		
+		List<Period> classes = periodService.getByStudentId(loggedInUser.studentId, archived);
+		Response response = new Response().put("classes", classes);
+		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+	}
+
+	@GetMapping(path = "/events")
+	public ResponseEntity<String> getEvents(@RequestHeader("Authorization") String authApiKey,
+		@RequestParam(value = "studentId", defaultValue = "-1") Long studentId) {
+		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+		if (!authToken.valid) {
+			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+		User loggedInUser = userService.getById(authToken.userId);
+
+		if (loggedInUser.type != UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+		}
+
+		studentId = loggedInUser.studentId;
+
+		List<Event> events = eventService.getByStudentId(studentId);
+		Response response = new Response().put("events", events);
+		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+	}
+
+	@GetMapping(path = "/preference")
+	public ResponseEntity<String> getPreference(@RequestHeader("Authorization") String authApiKey,
+		@RequestParam(value = "studentId", defaultValue = "-1") Long studentId) {
+		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+		if (!authToken.valid) {
+			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+		User loggedInUser = userService.getById(authToken.userId);
+
+		if (loggedInUser.type != UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+		}
+
+		studentId = loggedInUser.studentId;
+
+		Preference preference = preferenceService.getByStudentId(studentId);
+		Response response = new Response().put("preference", preference.toJsonObject());
+		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+	}
+
+	@PatchMapping(path = "/preference", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<String> patchPreference(
+    	@RequestHeader("Authorization") String authApiKey, 
+        @RequestBody Preference preference) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+		if (loggedInUser.type != UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+		}
+
+        Preference dbpreference = preferenceService.getByStudentId(loggedInUser.studentId);
+		preference.preferenceId = dbpreference.preferenceId;
+		preference.studentId = dbpreference.studentId;
+		if (preference.assignmentOrder == null) {
+			preference.assignmentOrder = dbpreference.assignmentOrder;
+		}
+		if (preference.startType == null) {
+			preference.startType = dbpreference.startType;
+		}
+		if (preference.breakLength == null) {
+			preference.breakLength = dbpreference.breakLength;
+		}
+		if (preference.breakFrequency == null) {
+			preference.breakFrequency = dbpreference.breakFrequency;
+		}
+
+		preferenceService.updatePreference(preference);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
+    }
+
+	@GetMapping(path = "/work")
+	public ResponseEntity<String> getWorks(@RequestHeader("Authorization") String authApiKey,
+		@RequestParam(value = "studentId", defaultValue = "-1") Long studentId,
+		@RequestParam(value = "outstanding", defaultValue = "true") Boolean outstanding) {
+		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+		if (!authToken.valid) {
+			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+		User loggedInUser = userService.getById(authToken.userId);
+
+		if (loggedInUser.type != UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+		}
+
+		studentId = loggedInUser.studentId;
+
+		List<Work> works = workService.getByStudentId(studentId, outstanding);
+		Response response = new Response().put("works", works);
+		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+	}
+
+	@GetMapping(path = "/todos")
+	public ResponseEntity<String> getWorks(@RequestHeader("Authorization") String authApiKey,
+		@RequestParam(value = "endDate", defaultValue = "-1") Long endDate,
+		@RequestParam(value = "startDate", defaultValue = "-1") Long startDate,
+		@RequestParam(value = "studentId", defaultValue = "-1") Long studentId) {
+		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+		if (!authToken.valid) {
+			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+		User loggedInUser = userService.getById(authToken.userId);
+
+		if (loggedInUser.type != UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+		}
+	
+		List<Todo> todos = todoService.getByStudentId(studentId, startDate, endDate);
+		Response response = new Response().put("works", todos);
+		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 	}
 }

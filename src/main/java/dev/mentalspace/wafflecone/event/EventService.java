@@ -1,4 +1,4 @@
-package dev.mentalspace.wafflecone.databaseobject;
+package dev.mentalspace.wafflecone.event;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,6 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class EventService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    public boolean existsById(long id) {
+        String sql = "SELECT COUNT(*) FROM event WHERE event_id = ?;";
+        int count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count != 0;
+    }
 
     public Event getById(long id) {
         String sql = "SELECT event_id, student_id, name, description, rrule_string, duration FROM event "

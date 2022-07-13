@@ -63,4 +63,24 @@ public class SchoolController {
         Response response = new Response("success").put("school", schools);
         return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
+
+    @PostMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<String> addSchool(@RequestHeader("Authorization") String authApiKey, 
+        @RequestBody School school) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (loggedInUser.type != UserType.ADMIN) {
+            JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+        }
+
+        schoolService.addSchool(school);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
+    }
 }
