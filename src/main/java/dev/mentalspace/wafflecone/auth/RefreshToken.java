@@ -12,7 +12,7 @@ import dev.mentalspace.wafflecone.user.User;
 
 public class RefreshToken {
     // One week in millis
-    private final long VALIDITY_DURATION = 7 * 24 * 60 * 60 * 1000;
+    private static final long VALIDITY_DURATION = 7 * 24 * 60 * 60 * 1000;
 
     public Long refreshTokenId;
     public Long userId;
@@ -48,7 +48,7 @@ public class RefreshToken {
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         headers.add("Set-Cookie",
-                "refreshToken=\"" + rawRefreshApiKey + "\"; Expires=" + sdf.format(new Date(System.currentTimeMillis()))
+                "refreshToken=\"" + rawRefreshApiKey + "\"; Expires=" + sdf.format(new Date(System.currentTimeMillis() + VALIDITY_DURATION))
                         + " GMT" + "; SameSite=Strict" + "; Path=/api/v0/auth/token" + "; Secure" + "; HttpOnly");
     }
 }
