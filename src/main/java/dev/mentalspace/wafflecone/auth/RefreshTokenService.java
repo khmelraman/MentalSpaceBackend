@@ -31,7 +31,7 @@ public class RefreshTokenService {
     }
 
     public RefreshToken getBySha256Hash(String hashedKey) {
-        String sql = "SELECT refresh_token_id, user_id, refresh_token_chain_id, expiration_time, permissions, valid FROM refresh_token WHERE token_string = ?;";
+        String sql = "SELECT refresh_token_id, user_id, refresh_token_chain_id, token_string, expiration_time, permissions, valid FROM refresh_token WHERE token_string = ?;";
         RowMapper<RefreshToken> rowMapper = new RefreshTokenRowMapper();
         RefreshToken refreshToken = jdbcTemplate.queryForObject(sql, rowMapper, hashedKey);
         return refreshToken;
