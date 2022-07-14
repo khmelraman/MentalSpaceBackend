@@ -15,13 +15,13 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // TODO: enable CSRF when done
-        HttpSessionCsrfTokenRepository repository = new
-        HttpSessionCsrfTokenRepository();
-        repository.setParameterName("csrfToken");
-        http
-        .csrf()
-        .csrfTokenRepository(repository);
-        // http.csrf().disable();
+        // HttpSessionCsrfTokenRepository repository = new
+        // HttpSessionCsrfTokenRepository();
+        // repository.setParameterName("csrfToken");
+        // http
+        // .csrf()
+        // .csrfTokenRepository(repository);
+        http.csrf().disable();
         return http.build();
     }
 

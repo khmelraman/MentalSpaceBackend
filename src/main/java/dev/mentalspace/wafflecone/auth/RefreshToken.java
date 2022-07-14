@@ -48,7 +48,7 @@ public class RefreshToken {
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         headers.add("Set-Cookie",
-                "refreshToken=\"" + rawRefreshApiKey + "\"; Expires=" + sdf.format(new Date(System.currentTimeMillis() + VALIDITY_DURATION))
+                "refreshToken=" + rawRefreshApiKey + "; Expires=" + sdf.format(new Date(System.currentTimeMillis() + VALIDITY_DURATION))
                         + " GMT" + "; SameSite=Strict" + "; Path=/api/v0/auth/token" + "; Secure" + "; HttpOnly");
     }
 }
