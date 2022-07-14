@@ -49,6 +49,14 @@ public class PeriodService {
         return period;
     }
 
+    public Period getByClassCode(String classCode) {
+        String sql = "SELECT period_id, teacher_id, subject_id, period, class_code, archived FROM period "
+                + "WHERE class_code = ?;";
+        RowMapper<Period> rowMapper = new PeriodRowMapper();
+        Period period = jdbcTemplate.queryForObject(sql, rowMapper, classCode);
+        return period;
+    }
+
     public List<Period> getByTeacherId(long id) {
         String sql = "SELECT period_id, teacher_id, subject_id, period, class_code, archived FROM period "
                 + "WHERE teacher_id = ?;";
@@ -59,7 +67,9 @@ public class PeriodService {
 
     public List<Period> getByTeacherId(long id, boolean archived) {
         String sql = "SELECT period_id, teacher_id, subject_id, period, class_code, archived FROM period "
-                + "WHERE teacher_id = ?" + (archived ? "" : " AND archived = false") + ";";
+                + "WHERE teacher_id = ?"
+                + (archived ? " archived = true" : "")
+                + ";";
         RowMapper<Period> rowMapper = new PeriodRowMapper();
         List<Period> period = jdbcTemplate.query(sql, rowMapper, id);
         return period;

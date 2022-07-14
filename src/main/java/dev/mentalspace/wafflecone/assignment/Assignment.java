@@ -4,6 +4,8 @@ import org.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import dev.mentalspace.wafflecone.Utils;
+
 public class Assignment {
     public Long assignmentId;
     @JsonProperty("classId")
@@ -14,6 +16,27 @@ public class Assignment {
     public Long estimatedBurden;
     public String name;
     public String description;
+
+    public void updateDetails(Assignment updAssignment) {
+        if (updAssignment.dateAssigned != null) {
+            this.dateAssigned = updAssignment.dateAssigned;
+        }
+        if (updAssignment.dateDue != null) {
+            this.dateDue = updAssignment.dateDue;
+        }
+        if (!Utils.isEmpty(updAssignment.type)) {
+            this.type = updAssignment.type;
+        }
+        if (updAssignment.estimatedBurden != null) {
+            this.estimatedBurden = updAssignment.estimatedBurden;
+        }
+        if (!Utils.isEmpty(updAssignment.name)) {
+            this.name = updAssignment.name;
+        }
+        if (!Utils.isEmpty(updAssignment.description)) {
+            this.description = updAssignment.description;
+        }
+    }
 
     public JSONObject toJsonObject() {
         JSONObject jsonObject = new JSONObject();

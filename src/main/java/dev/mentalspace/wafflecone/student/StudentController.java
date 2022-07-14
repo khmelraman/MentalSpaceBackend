@@ -113,13 +113,11 @@ public class StudentController {
 		}
 		
 		// TODO: debate whether any account should view any student that they want
-		
 		// only allow non-student to view others
 		if (loggedInUser.type == UserType.STUDENT) {
 			JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 		}
-
 
 		if (searchStudentId == -1) {
 			if (!studentService.existsByCanonicalId(searchCanonicalId)) {
@@ -307,9 +305,10 @@ public class StudentController {
 	}
 
 	@GetMapping(path = "/todos")
-	public ResponseEntity<String> getWorks(@RequestHeader("Authorization") String authApiKey,
-		@RequestParam(value = "endDate", defaultValue = "-1") Long endDate,
+	public ResponseEntity<String> getTodos(
+		@RequestHeader("Authorization") String authApiKey,
 		@RequestParam(value = "startDate", defaultValue = "-1") Long startDate,
+		@RequestParam(value = "endDate", defaultValue = "-1") Long endDate,
 		@RequestParam(value = "studentId", defaultValue = "-1") Long studentId) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
 		if (!authToken.valid) {
@@ -322,7 +321,7 @@ public class StudentController {
 			JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
 		}
-	
+		
 		List<Todo> todos = todoService.getByStudentId(studentId, startDate, endDate);
 		Response response = new Response().put("todos", todos);
 		return ResponseEntity.status(HttpStatus.OK).body(response.toString());

@@ -1,5 +1,7 @@
 package dev.mentalspace.wafflecone.databaseobject;
 
+import java.util.List;
+
 import org.json.JSONObject;
 
 public class Enrollment {
@@ -7,6 +9,12 @@ public class Enrollment {
     public Long studentId;
     public Long periodId;
     public Integer studentPreference;
+
+    List<Long> studentIds;
+
+    public void setStudentIds(List<Long> studentIds) {
+        this.studentIds = studentIds;
+    }
 
     public Enrollment() {
     }

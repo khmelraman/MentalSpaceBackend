@@ -74,19 +74,18 @@ public class AssignmentService {
 
     public void updateAssignment(Assignment assignment) {
         String sql = "UPDATE assignment SET "
-                + "period_id = ?, date_assigned = ?, date_due = ?, type = ?, estimated_burden = ?, name = ?, description = ? "
+                + "date_assigned = ?, date_due = ?, type = ?, estimated_burden = ?, name = ?, description = ? "
                 + "WHERE assignment_id = ?;";
         jdbcTemplate.update(new PreparedStatementCreator() {
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(sql);
-                ps.setLong(1, assignment.periodId);
-                ps.setLong(2, assignment.dateAssigned);
-                ps.setLong(3, assignment.dateDue);
-                ps.setString(4, assignment.type);
-                ps.setLong(5, assignment.estimatedBurden);
-                ps.setString(6, assignment.name);
-                ps.setString(7, assignment.description);
-                ps.setLong(8, assignment.assignmentId);
+                ps.setLong(1, assignment.dateAssigned);
+                ps.setLong(2, assignment.dateDue);
+                ps.setString(3, assignment.type);
+                ps.setLong(4, assignment.estimatedBurden);
+                ps.setString(5, assignment.name);
+                ps.setString(6, assignment.description);
+                ps.setLong(7, assignment.assignmentId);
                 return ps;
             }
         });

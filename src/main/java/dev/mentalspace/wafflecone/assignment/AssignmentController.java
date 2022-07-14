@@ -79,7 +79,7 @@ public class AssignmentController {
             }
         }
         if (loggedInUser.type == UserType.TEACHER) {
-	    // TODO: refactor into periodService.isTeacher(teacherId, periodId);
+	    // TODO: refactor into periodService.isTeacher(teacherId, periodId); maybe:tm:
             if (periodService.getById(assignment.periodId).teacherId != loggedInUser.teacherId) {
                 JSONObject errors = new JSONObject().put("teacherId", ErrorString.INVALID_ID);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
@@ -114,6 +114,9 @@ public class AssignmentController {
             errors.put("classId", ErrorString.notFound("classId"));
             returnStatus = HttpStatus.BAD_REQUEST;
         }
+        if (createAssignment.dateAssigned == null || createAssignment.dateAssigned == 0) {
+            createAssignment.dateAssigned = System.currentTimeMillis();
+        }
         if (createAssignment.dateDue == null) {
             errors.put("dateDue", ErrorString.notFound("dateDue"));
             returnStatus = HttpStatus.BAD_REQUEST;
@@ -125,6 +128,10 @@ public class AssignmentController {
         if (Utils.isEmpty(createAssignment.name)) {
             errors.put("name", ErrorString.notFound("name"));
             returnStatus = HttpStatus.BAD_REQUEST;
+        }
+
+        if (returnStatus != HttpStatus.OK) {
+            return ResponseEntity.status(returnStatus).body(new ErrorResponse(errors).toString());
         }
 
         Period period = periodService.getById(createAssignment.periodId);
@@ -142,5 +149,63 @@ public class AssignmentController {
                 .put("assignmentId", createAssignment.assignmentId)
                 .toString()
         );
+    }
+
+    @PatchMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<String> patchAssignment(
+        @RequestHeader("Authorization") String authApiKey,
+        @RequestBody Assignment patchDetails) {
+        
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (loggedInUser.type == UserType.STUDENT) {
+            JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        
+        Assignment assignment = assignmentService.getById(patchDetails.assignmentId);
+
+        if (loggedInUser.type == UserType.TEACHER) {
+            Period period = periodService.getById(assignment.assignmentId);
+            if (period.teacherId != loggedInUser.teacherId) {
+                JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+            }
+        }
+
+        assignment.updateDetails(patchDetails);
+        assignmentService.updateAssignment(assignment);
+
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
+    }
+
+    @DeleteMapping(path = "")
+    public ResponseEntity<String> deleteAssignment(
+        @RequestHeader("Authorization") String authApiKey,
+        @RequestBody Assignment deleteAssignment) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (loggedInUser.type != UserType.TEACHER) {
+            JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        if (periodService.getById(deleteAssignment.periodId).teacherId != loggedInUser.teacherId) {
+            JSONObject errors = new JSONObject().put("user", ErrorString.OWNERSHIP);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+
+        assignmentService.deleteAssignment(deleteAssignment);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
     }
 }

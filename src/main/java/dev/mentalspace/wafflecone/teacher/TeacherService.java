@@ -29,8 +29,21 @@ public class TeacherService {
 		return teacher;
 	}
 
+	public Teacher getByCanonicalId(String id) {
+		String sql = "SELECT teacher_id, canonical_id, first_name, last_name, phone, department FROM teacher WHERE canonical_id = ?;";
+		RowMapper<Teacher> rowMapper = new TeacherRowMapper();
+		Teacher teacher = jdbcTemplate.queryForObject(sql, rowMapper, id);
+		return teacher;
+	}
+
 	public boolean existsById(long id) {
 		String sql = "SELECT COUNT(*) FROM teacher WHERE teacher_id = ?;";
+		int count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+		return count != 0;
+	}
+
+	public boolean existsByCanonicalId(String id) {
+		String sql = "SELECT COUNT(*) FROM teacher WHERE canonical_id = ?;";
 		int count = jdbcTemplate.queryForObject(sql, Integer.class, id);
 		return count != 0;
 	}

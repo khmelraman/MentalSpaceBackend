@@ -57,10 +57,13 @@ public class TodoService {
         return todos;
     }
 
+    // Ensure whatever uses this function has default values; THIS IS NULL-UNSAFE CODE
+    // TODO: REFACTOR THIS SO IT'S NULL-SAFE JUST IN CASE:tm:
     public List<Todo> getByStudentId(long id, long start, long end) {
         String sql = "SELECT todo_id, work_id, date, planned_time, projected_start_time, priority "
-                + "FROM todo JOIN work ON todo.work_id = work.work_id WHERE student_id = ?" + 
-                (start <= 0 ? "" : " AND date >= " + String.valueOf(start)) + (end <= 0 ? "" : " AND date <= " + String.valueOf(end)) + ";";
+                + "FROM todo JOIN work ON todo.work_id = work.work_id WHERE student_id = ?" 
+                + (start <= 0 ? "" : " AND date >= " + String.valueOf(start))
+                + (end <= 0 ? "" : " AND date <= " + String.valueOf(end)) + ";";
         RowMapper<Todo> rowMapper = new TodoRowMapper();
         List<Todo> todos = jdbcTemplate.query(sql, rowMapper, id);
         return todos;

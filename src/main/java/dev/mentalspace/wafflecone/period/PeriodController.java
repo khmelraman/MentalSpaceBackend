@@ -2,12 +2,17 @@ package dev.mentalspace.wafflecone.period;
 
 import dev.mentalspace.wafflecone.Utils;
 import dev.mentalspace.wafflecone.WaffleConeController;
+import dev.mentalspace.wafflecone.assignment.Assignment;
+import dev.mentalspace.wafflecone.assignment.AssignmentService;
 import dev.mentalspace.wafflecone.auth.AuthToken;
 import dev.mentalspace.wafflecone.auth.AuthScope;
 import dev.mentalspace.wafflecone.auth.AuthTokenService;
 import dev.mentalspace.wafflecone.auth.RefreshToken;
 import dev.mentalspace.wafflecone.auth.RefreshTokenService;
+import dev.mentalspace.wafflecone.databaseobject.Enrollment;
 import dev.mentalspace.wafflecone.databaseobject.EnrollmentService;
+
+import java.util.List;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +36,7 @@ import dev.mentalspace.wafflecone.response.ErrorResponse;
 import dev.mentalspace.wafflecone.response.ErrorString;
 import dev.mentalspace.wafflecone.response.Response;
 import dev.mentalspace.wafflecone.subject.SubjectService;
+import dev.mentalspace.wafflecone.teacher.Teacher;
 import dev.mentalspace.wafflecone.user.User;
 import dev.mentalspace.wafflecone.user.UserService;
 import dev.mentalspace.wafflecone.user.UserType;
@@ -50,6 +56,8 @@ public class PeriodController {
     EnrollmentService enrollmentService;
     @Autowired
     SubjectService subjectService;
+    @Autowired
+    AssignmentService assignmentService;
 
     @PostMapping(path = { "" }, consumes = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<String> createPeriod(@RequestHeader("Authorization") String authApiKey,
@@ -209,5 +217,121 @@ public class PeriodController {
         periodService.deletePeriod(period);
 
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not yet implemented.");
+    }
+
+    @GetMapping(path = { "/assignments" })
+    public ResponseEntity<String> periodAssignments(@RequestHeader("Authorization") String authApiKey,
+            @RequestParam(value = "classId", defaultValue = "-1") long searchPeriodId) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (loggedInUser.type == UserType.TEACHER) {
+            Period period = periodService.getById(searchPeriodId);
+            if (loggedInUser.teacherId != period.teacherId) {
+                // If non-owning teacher
+                JSONObject errors = new JSONObject().put("classId", ErrorString.INVALID_ID);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());    
+            }
+        } else if (loggedInUser.type == UserType.STUDENT) {
+            // check enrolled, negated logic for cleanliness
+            if (!enrollmentService.isEnrolled(loggedInUser.studentId, searchPeriodId)) {
+                JSONObject errors = new JSONObject().put("classId", ErrorString.INVALID_ID);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+            }
+        }
+
+        if (!periodService.existsById(searchPeriodId)) {
+            JSONObject errors = new JSONObject().put("classId", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+        }
+
+        List<Assignment> assignments = assignmentService.getByPeriodId(searchPeriodId);
+        Response response = new Response("success").put("classIds", assignments);
+        return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+    }
+
+
+    @GetMapping(path = { "/students" })
+    public ResponseEntity<String> periodStudents(@RequestHeader("Authorization") String authApiKey,
+            @RequestParam(value = "classId", defaultValue = "-1") long searchPeriodId) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        // Debate on letting students see this resource
+        if(loggedInUser.type == UserType.STUDENT){
+            JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+
+        if (!periodService.existsById(searchPeriodId)) {
+            JSONObject errors = new JSONObject().put("classId", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+        }
+        
+        Period periods = periodService.getBySubjectId(searchPeriodId);
+
+        Response response = new Response("success").put("students", periods.toJsonObject());
+        return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+    }
+
+    @PostMapping(path = "/join", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<String> joinPeriod(
+        @RequestHeader("Authorization") String authApiKey,
+        @RequestBody Period joinPeriod
+    ) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (loggedInUser.type != UserType.STUDENT) {
+            JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        if (!periodService.existsByClassCode(joinPeriod.classCode)) {
+            JSONObject errors = new JSONObject().put("classCode", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+        }
+
+        Period period = periodService.getByClassCode(joinPeriod.classCode);
+        enrollmentService.addEnrollment(loggedInUser.studentId, period.periodId, 0);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
+        // TODO: Debate on implementing allowing admin/teachers to add students
+    }
+
+    @PostMapping(path = "/kick", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<String> kickStudent(
+        @RequestHeader("Authorization") String authApiKey,
+        @RequestBody Enrollment kickStudent) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (loggedInUser.type != UserType.TEACHER) {
+            JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        if (periodService.getById(kickStudent.periodId).teacherId != loggedInUser.teacherId) {
+            JSONObject errors = new JSONObject().put("user", ErrorString.OWNERSHIP);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+
+        enrollmentService.kickStudents(kickStudent);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
     }
 }

@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
@@ -60,6 +61,22 @@ public class EnrollmentService {
         enrollment.enrollmentId = keyHolder.getKey().longValue();
     }
 
+    public long addEnrollment(long studentId, long periodId, int studentPreference) {
+        String sql = "INSERT INTO enrollment (student_id, period_id, student_preference) VALUES (?, ?, ?);";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ps.setLong(1, studentId);
+                ps.setLong(2, periodId);
+                ps.setInt(3, studentPreference);
+                return ps;
+            }
+        }, keyHolder);
+
+        return keyHolder.getKey().longValue();
+    }
+
     public void updateEnrollment(Enrollment enrollment) {
         String sql = "UPDATE enrollment SET student_id = ?, period_id = ?, student_preference = ? "
                 + "WHERE enrollment_id = ?;";
@@ -73,6 +90,25 @@ public class EnrollmentService {
                 return ps;
             }
         });
+    }
+
+    public int[] kickStudents(Enrollment enrollment) {
+        int[] addCounts = jdbcTemplate.batchUpdate(
+            "DELETE FROM enrollment WHERE period_id = ? AND student_id = ?;", 
+            new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    Long studentId = enrollment.studentIds.get(i);
+                    ps.setLong(1, enrollment.periodId);
+                    ps.setLong(2, studentId);
+                }
+                @Override
+                public int getBatchSize() {
+                    return enrollment.studentIds.size();
+                }
+            }
+        );
+        return addCounts;
     }
 
     public void deleteEnrollment(Enrollment enrollment) {

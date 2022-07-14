@@ -7,6 +7,10 @@ import dev.mentalspace.wafflecone.auth.AuthScope;
 import dev.mentalspace.wafflecone.auth.AuthTokenService;
 import dev.mentalspace.wafflecone.auth.RefreshToken;
 import dev.mentalspace.wafflecone.auth.RefreshTokenService;
+import dev.mentalspace.wafflecone.period.Period;
+import dev.mentalspace.wafflecone.period.PeriodService;
+
+import java.util.List;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +43,8 @@ public class TeacherController {
 	UserService userService;
 	@Autowired
 	TeacherService teacherService;
+	@Autowired
+	PeriodService periodService;
 
 	@PostMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<String> registerTeacher(@RequestHeader("Authorization") String authApiKey,
@@ -133,5 +139,39 @@ public class TeacherController {
 
 		// TODO: Implement modify other people's account(s)
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not Implemented Yet.");
+	}
+
+	@GetMapping("/classes")
+	public ResponseEntity<String> teacherDetails(@RequestHeader("Authorization") String authApiKey,
+			@RequestParam(value = "archived", defaultValue = "false") boolean searchArchived,
+			@RequestParam(value = "canonicalId", defaultValue = "") String searchCanonicalId,
+			@RequestParam(value = "teacherId", defaultValue = "-1") long searchTeacherId) {
+		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+		if (!authToken.valid) {
+			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+		User loggedInUser = userService.getById(authToken.userId);
+
+		if (loggedInUser.type == UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+
+		if (!teacherService.existsById(searchTeacherId)) {
+			if (!teacherService.existsByCanonicalId(searchCanonicalId)) {
+				if (loggedInUser.type == UserType.TEACHER) {
+					searchTeacherId = loggedInUser.teacherId;
+				} else {
+					JSONObject errors = new JSONObject().put("teacherId", ErrorString.INVALID_ID);
+        			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+				}
+			}
+			searchTeacherId = teacherService.getByCanonicalId(searchCanonicalId).teacherId;
+		}
+		List<Period> teacherPeriods = periodService.getByTeacherId(searchTeacherId, searchArchived);
+		
+		Response response = new Response("success").put("classIds", teacherPeriods);
+		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 	}
 }
