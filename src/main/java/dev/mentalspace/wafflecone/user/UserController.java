@@ -178,6 +178,12 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 		}
 
+		// Debate on sane default
+		if (loggedInUser.type == UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+
 		// TODO: Implement searching by IDs
 
 		if (loggedInUser.type == UserType.TEACHER) {

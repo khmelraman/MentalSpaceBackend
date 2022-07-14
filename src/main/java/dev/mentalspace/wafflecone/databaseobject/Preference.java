@@ -13,6 +13,23 @@ public class Preference {
     public Preference() {
     }
 
+    public void update(Preference updPreference) {
+        this.preferenceId = updPreference.preferenceId;
+		this.studentId = updPreference.studentId;
+		if (updPreference.assignmentOrder != null) {
+			this.assignmentOrder = updPreference.assignmentOrder;
+		}
+		if (updPreference.startType != null) {
+			this.startType = updPreference.startType;
+		}
+		if (updPreference.breakLength != null) {
+			this.breakLength = updPreference.breakLength;
+		}
+		if (updPreference.breakFrequency != null) {
+			this.breakFrequency = updPreference.breakFrequency;
+		}
+    }
+
     public JSONObject toJsonObject() {
         JSONObject jsonObject = new JSONObject();
         jsonObject

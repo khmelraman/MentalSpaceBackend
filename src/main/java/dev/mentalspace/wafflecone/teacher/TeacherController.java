@@ -130,14 +130,14 @@ public class TeacherController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 		}
 
-		if (patchDetails.teacherId == null || patchDetails.teacherId <= 0) {
-			Teacher loggedInTeacher = teacherService.getById(loggedInUser.studentId);
+		if (teacherService.existsById(patchDetails.teacherId)) {
+			Teacher loggedInTeacher = teacherService.getById(loggedInUser.teacherId);
 			loggedInTeacher.updateTeacher(patchDetails);
 			teacherService.updateTeacher(loggedInTeacher);
 			return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
 		}
 
-		// TODO: Implement modify other people's account(s)
+		// TODO: Debate on if admins can modify teacher accs 
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not Implemented Yet.");
 	}
 

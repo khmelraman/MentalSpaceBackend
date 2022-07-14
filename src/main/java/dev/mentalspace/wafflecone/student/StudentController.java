@@ -157,7 +157,7 @@ public class StudentController {
 			return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
 		}
 
-		// TODO: Implement modify other people's account(s) when teacher
+		// TODO: Debate if teachers can modify student accounts
 		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Not Implemented Yet.");
 	}
 
@@ -245,7 +245,7 @@ public class StudentController {
 	@PatchMapping(path = "/preference", consumes = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<String> patchPreference(
     	@RequestHeader("Authorization") String authApiKey, 
-        @RequestBody Preference preference) {
+        @RequestBody Preference patchDetails) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
             JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -258,24 +258,9 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
 		}
 
-        Preference dbpreference = preferenceService.getByStudentId(loggedInUser.studentId);
-
-		//TODO: refactor.
-		preference.preferenceId = dbpreference.preferenceId;
-		preference.studentId = dbpreference.studentId;
-		if (preference.assignmentOrder == null) {
-			preference.assignmentOrder = dbpreference.assignmentOrder;
-		}
-		if (preference.startType == null) {
-			preference.startType = dbpreference.startType;
-		}
-		if (preference.breakLength == null) {
-			preference.breakLength = dbpreference.breakLength;
-		}
-		if (preference.breakFrequency == null) {
-			preference.breakFrequency = dbpreference.breakFrequency;
-		}
-
+        Preference preference = preferenceService.getByStudentId(loggedInUser.studentId);
+		preference.update(patchDetails);
+		
 		preferenceService.updatePreference(preference);
 
         return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());

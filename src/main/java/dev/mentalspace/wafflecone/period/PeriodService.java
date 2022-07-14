@@ -15,6 +15,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.mentalspace.wafflecone.teacher.Teacher;
+import dev.mentalspace.wafflecone.user.User;
+
 @Transactional
 @Repository
 public class PeriodService {
@@ -31,6 +34,20 @@ public class PeriodService {
         String sql = "SELECT COUNT(*) FROM period WHERE period_id = ?;";
         int count = jdbcTemplate.queryForObject(sql, Integer.class, code);
         return count != 0;
+    }
+
+    public boolean isTeacher(long teacherId, long periodId) {
+        return getById(periodId).teacherId == teacherId; 
+    }
+
+    // DO NOT USE IF YOU NEED PERIOD OBJECT LATER
+    public boolean isTeacher(Teacher teacher, Period period) {
+        return isTeacher(teacher.teacherId, period.periodId);
+    }
+
+    // VERIFY USERTYPE BEFORE USE
+    public boolean isTeacher(User user, Period period) {
+        return isTeacher(user.teacherId, period.periodId);
     }
 
     public Period getById(long id) {

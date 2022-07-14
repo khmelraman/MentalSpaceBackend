@@ -5,6 +5,7 @@ import dev.mentalspace.wafflecone.WaffleConeController;
 import dev.mentalspace.wafflecone.auth.AuthToken;
 import dev.mentalspace.wafflecone.auth.AuthScope;
 import dev.mentalspace.wafflecone.auth.AuthTokenService;
+import dev.mentalspace.wafflecone.databaseobject.EnrollmentService;
 
 import java.util.List;
 
@@ -31,8 +32,7 @@ import dev.mentalspace.wafflecone.user.*;
 import dev.mentalspace.wafflecone.work.*;
 import dev.mentalspace.wafflecone.todo.*;
 import dev.mentalspace.wafflecone.assignment.*;
-// TODO: when enrollment service moves to /enrollment/* change */
-import dev.mentalspace.wafflecone.databaseobject.*;
+import dev.mentalspace.wafflecone.databaseobject.Enrollment;
 import dev.mentalspace.wafflecone.period.Period;
 import dev.mentalspace.wafflecone.period.PeriodService;
 
@@ -79,8 +79,7 @@ public class AssignmentController {
             }
         }
         if (loggedInUser.type == UserType.TEACHER) {
-	    // TODO: refactor into periodService.isTeacher(teacherId, periodId); maybe:tm:
-            if (periodService.getById(assignment.periodId).teacherId != loggedInUser.teacherId) {
+            if (periodService.isTeacher(loggedInUser.teacherId, assignment.periodId)) {
                 JSONObject errors = new JSONObject().put("teacherId", ErrorString.INVALID_ID);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
             }
@@ -171,8 +170,7 @@ public class AssignmentController {
         Assignment assignment = assignmentService.getById(patchDetails.assignmentId);
 
         if (loggedInUser.type == UserType.TEACHER) {
-            Period period = periodService.getById(assignment.assignmentId);
-            if (period.teacherId != loggedInUser.teacherId) {
+            if (periodService.isTeacher(loggedInUser.teacherId, assignment.periodId)) {
                 JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
             }
