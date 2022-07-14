@@ -3,6 +3,7 @@ package dev.mentalspace.wafflecone;
 import java.util.ArrayList;
 
 import dev.mentalspace.wafflecone.databaseobject.Preference;
+import dev.mentalspace.wafflecone.event.Event;
 import dev.mentalspace.wafflecone.todo.Todo;
 
 public class Scheduler {
@@ -28,6 +29,73 @@ public class Scheduler {
      */
     private static long fiveMinBack(long time) {
         return (time / 300000) * 300000;
+    }
+
+    /**
+     * Gets the start times of events on the given day and returns them in an array.
+     * 
+     * @param events - array of events that the user has. 
+     * @param day - the day that the events occur on. 
+     * @return an array with the start times of events during day. 
+     */
+    private static long[] getEventStart(Event[] events, long day) {
+        ArrayList<Long> starts = new ArrayList<Long>();
+        for(int i = 0; i < events.length; i++)
+        {
+            System.out.println(i + ", " + events[i].getStartTimeForTheDay(day));
+            if(events[i].getStartTimeForTheDay(day) != -1) {
+                starts.add(events[i].getStartTimeForTheDay(day));
+            }
+        }
+
+        for (int x = 0; x < starts.size(); x++) {
+            for (int y = x + 1; y < starts.size(); y++) {
+                if (starts.get(x) > starts.get(y)) {
+                    starts.add(y + 1, starts.get(x));
+                    starts.remove(x);
+
+                }
+            }
+        }
+
+        long[] eventStart = new long[starts.size()];
+        for(int j = 0; j < starts.size(); j++) {
+            System.out.println("j: " + j + ", starts: " + starts.get(j));
+            eventStart[j] = starts.get(j);
+        }
+        return eventStart;
+    }
+
+    /**
+     * Gets the end times of events on the given day and returns them in an array.
+     * 
+     * @param events - array of events that the user has. 
+     * @param day - the day that the events occur on. 
+     * @return an array with the end times of events during day. 
+     */
+    private static long[] getEventEnd(Event[] events, long day) {
+        ArrayList<Long> ends = new ArrayList<Long>();
+        for(int i = 0; i < events.length; i++)
+        {
+            if(events[i].getEndTimeForTheDay(day) != -1) {
+                ends.add(events[i].getEndTimeForTheDay(day));
+            }
+        }
+        for (int x = 0; x < ends.size(); x++) {
+            for (int y = x + 1; y < ends.size(); y++) {
+                if (ends.get(x) > ends.get(y)) {
+                    ends.add(y + 1, ends.get(x));
+                    ends.remove(x);
+
+                }
+            }
+        }
+
+        long[] eventEnd = new long[ends.size()];
+        for(int j = 0; j < ends.size(); j++) {
+            eventEnd[j] = ends.get(j);
+        }
+        return eventEnd;
     }
 
     /**
@@ -68,18 +136,17 @@ public class Scheduler {
      * @param pref       - student-inputted preference
      * @param todos      - array of todos for the day in order of priority. Start
      *                   times must be null.
-     * @param eventStart - array of start times for events in epoch milliseconds in
-     *                   chronological ascending order.
-     * @param eventEnd   - array of start times for events in epoch milliseconds in
-     *                   chronological ascending order.
+     * @param events     - array of events that the user has set. 
      * @param start      - the earliest a user can start on todos in epoch
      *                   milliseconds.
      * @param end        - the latest a user can finish todos in epoch milliseconds.
      * @return an Arraylist of todos with the projectedStartTime scheduled in
      *         chronological order.
      */
-    public static ArrayList<Todo> scheduleASAP(Preference pref, Todo[] todos, long[] eventStart, long[] eventEnd,
+    public static ArrayList<Todo> scheduleASAP(Preference pref, Todo[] todos, Event[] events,
             long start, long end) {
+        long[] eventStart = getEventStart(events, start);
+        long[] eventEnd = getEventEnd(events, start);
         long blockStart = fiveMinForward(start);
         int index = 0;
         long blockEnd = eventStart[index];
@@ -137,19 +204,18 @@ public class Scheduler {
      * @param pref       - student-inputted preference
      * @param todos      - array of todos for the day in order of priority. Start
      *                   times must be null.
-     * @param eventStart - array of start times for events in epoch milliseconds in
-     *                   chronological ascending order.
-     * @param eventEnd   - array of start times for events in epoch milliseconds in
-     *                   chronological ascending order.
+     * @param events     - array of events that the user has set. 
      * @param start      - the earliest a user can start on todos in epoch
      *                   milliseconds.
      * @param end        - the latest a user can finish todos in epoch milliseconds.
      * @return an Arraylist of todos with the projectedStartTime scheduled in
      *         chronological order.
      */
-    public static ArrayList<Todo> scheduleALAP(Preference pref, Todo[] todos, long[] eventStart, long[] eventEnd,
+    public static ArrayList<Todo> scheduleALAP(Preference pref, Todo[] todos, Event[] events,
             long start, long end) {
-        ArrayList<Todo> setTodos = scheduleASAP(pref, todos, eventStart, eventEnd, start, end);
+        long[] eventStart = getEventStart(events, start);
+        long[] eventEnd = getEventEnd(events, start);
+        ArrayList<Todo> setTodos = scheduleASAP(pref, todos, events, start, end);
         ArrayList<Long> starts = new ArrayList<Long>();
         ArrayList<Long> ends = new ArrayList<Long>();
         int[] indexes = new int[setTodos.size()];
@@ -248,7 +314,6 @@ public class Scheduler {
                 }
             }
         }
-
         return setTodos;
-    }
+    }  
 }

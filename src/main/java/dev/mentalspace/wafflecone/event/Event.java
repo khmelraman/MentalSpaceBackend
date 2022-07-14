@@ -24,12 +24,15 @@ public class Event {
     public long getStartTimeForTheDay(long day) {
         long next_instance = this.rrule.iterator(day, TimeZone.getTimeZone("UTC")).nextMillis();
         if ((next_instance - day) > 86400000) {
-            return 0;
+            return -1;
         }
         return next_instance;
     }
 
     public long getEndTimeForTheDay(long day) {
+        if(this.getStartTimeForTheDay(day) == -1) {
+            return -1;
+        }
         return (this.getStartTimeForTheDay(day) + this.duration);
     }
 
