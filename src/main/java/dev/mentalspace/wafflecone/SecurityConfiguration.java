@@ -15,13 +15,13 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // TODO: enable CSRF when done
-        // HttpSessionCsrfTokenRepository repository = new
-        // HttpSessionCsrfTokenRepository();
-        // repository.setParameterName("csrfToken");
-        // http
-        // .csrf()
-        // .csrfTokenRepository(repository);
-        http.csrf().disable();
+        HttpSessionCsrfTokenRepository repository = new
+        HttpSessionCsrfTokenRepository();
+        repository.setParameterName("csrfToken");
+        http
+        .csrf()
+        .csrfTokenRepository(repository);
+        // http.csrf().disable();
         return http.build();
     }
 
@@ -32,7 +32,8 @@ public class SecurityConfiguration {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/v0/**")
                         .allowedOrigins("https://dev-waffle-cone.probablyanasian.dev",
-                                "https://probablyanasian.stoplight.io/", "https://editor.swagger.io/")
+                                "https://probablyanasian.stoplight.io/", "https://editor.swagger.io/",
+                                "http://localhost:19006")
                         .allowCredentials(true).allowedMethods("GET", "POST", "PATCH", "DELETE");
             }
         };

@@ -40,3 +40,6 @@ out/
 # I'll push a redacted version at some point for ease of installation
 **/application.properties
 *.sql
+
+startbg/
+startbg.sh

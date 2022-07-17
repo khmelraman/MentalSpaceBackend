@@ -75,7 +75,7 @@ public class StudentController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 		}
 
-		if (registerStudentDetails.phone > 9_999_999_999_9999L) {
+		if (registerStudentDetails.phone != null && registerStudentDetails.phone > 9_999_999_999_9999L) {
 			JSONObject errors = new JSONObject().put("phone", ErrorString.PHONE_NUMBER_LENGTH);
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 		}
@@ -145,7 +145,7 @@ public class StudentController {
 		}
 		User loggedInUser = userService.getById(authToken.userId);
 
-		if (patchDetails.phone > 9_999_999_999_9999L) {
+		if (patchDetails.phone != null && patchDetails.phone > 9_999_999_999_9999L) {
 			JSONObject errors = new JSONObject().put("phone", ErrorString.PHONE_NUMBER_LENGTH);
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
 		}
