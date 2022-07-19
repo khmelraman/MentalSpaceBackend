@@ -13,6 +13,21 @@ public class Todo {
     public Todo() {
     }
 
+    public void updateDetails(Todo updTodo) {
+        if (updTodo.date != null) {
+            this.date = updTodo.date;
+        }
+        if (updTodo.plannedTime != null) {
+            this.plannedTime = updTodo.plannedTime;
+        }
+        if (updTodo.projectedStartTime != null) {
+            this.projectedStartTime = updTodo.projectedStartTime;
+        }
+        if (updTodo.priority != null) {
+            this.priority = updTodo.priority;
+        }
+    }
+
     public JSONObject toJsonObject() {
         JSONObject jsonObject = new JSONObject();
         jsonObject

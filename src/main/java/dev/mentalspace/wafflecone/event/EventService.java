@@ -37,7 +37,7 @@ public class EventService {
 
     public List<Event> getByStudentId(long id) {
         String sql = "SELECT event_id, student_id, name, description, rrule_string, duration FROM event "
-                + "WHERE student_id = ?;";
+                + "WHERE student_id = ? ORDER BY name;";
         RowMapper<Event> rowMapper = new EventRowMapper();
         List<Event> events = jdbcTemplate.query(sql, rowMapper, id);
         return events;

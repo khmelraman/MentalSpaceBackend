@@ -42,7 +42,7 @@ public class WorkService {
 
     public List<Work> getByStudentId(long id) {
         String sql = "SELECT work_id, student_id, assignment_id, remaining_time, priority FROM work "
-                + "WHERE student_id = ?;";
+                + "WHERE student_id = ? ORDER BY 1;";
         RowMapper<Work> rowMapper = new WorkRowMapper();
         List<Work> works = jdbcTemplate.query(sql, rowMapper, id);
         return works;
@@ -51,7 +51,7 @@ public class WorkService {
     public List<Work> getByStudentId(long id, boolean outstanding) {
         String sql = "SELECT work_id, student_id, assignment_id, remaining_time, priority FROM work "
                 + "WHERE student_id = ?" + 
-                (outstanding ? " AND remaining_time = 0" : "") + ";";
+                (outstanding ? " AND remaining_time = 0" : "") + " ORDER BY 1;";
         RowMapper<Work> rowMapper = new WorkRowMapper();
         List<Work> works = jdbcTemplate.query(sql, rowMapper, id);
         return works;
@@ -59,7 +59,7 @@ public class WorkService {
 
     public List<Work> getByAssignmentId(long id) {
         String sql = "SELECT work_id, student_id, assignment_id, remaining_time, priority FROM work "
-                + "WHERE assignment_id = ?;";
+                + "WHERE assignment_id = ? ORDER BY 1;";
         RowMapper<Work> rowMapper = new WorkRowMapper();
         List<Work> works = jdbcTemplate.query(sql, rowMapper, id);
         return works;

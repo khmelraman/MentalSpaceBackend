@@ -5,10 +5,18 @@ import org.json.JSONObject;
 public class Preference {
     public Long preferenceId;
     public Long studentId;
-    public Integer assignmentOrder;
-    public Integer startType;
+    public AssignmentOrder assignmentOrder;
+    public StartType startType;
     public Long breakLength;
     public Long breakFrequency;
+    public boolean keepTogether;
+
+    public Long start;
+    public Long end;
+
+    public void setType(String type) {
+        this.startType = StartType.valueOf(type.toUpperCase());
+    }
 
     public Preference() {
     }

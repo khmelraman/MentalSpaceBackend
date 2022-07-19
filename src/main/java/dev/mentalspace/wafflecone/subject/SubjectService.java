@@ -28,6 +28,13 @@ public class SubjectService {
         return subject;
     }
 
+    public List<Subject> getAll() {
+        String sql = "SELECT subject_id, department, description, name FROM subject ORDER BY department;";
+        RowMapper<Subject> rowMapper = new SubjectRowMapper();
+        List<Subject> subjects = jdbcTemplate.query(sql, rowMapper);
+        return subjects;
+    }
+
     public boolean existsById(long id) {
         String sql = "SELECT COUNT(*) FROM subject WHERE subject_id = ?;";
         int count = jdbcTemplate.queryForObject(sql, Integer.class, id);

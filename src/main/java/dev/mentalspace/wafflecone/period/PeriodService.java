@@ -76,7 +76,7 @@ public class PeriodService {
 
     public List<Period> getByTeacherId(long id) {
         String sql = "SELECT period_id, teacher_id, subject_id, period, class_code, archived FROM period "
-                + "WHERE teacher_id = ?;";
+                + "WHERE teacher_id = ? ORDER BY archived, period_id;";
         RowMapper<Period> rowMapper = new PeriodRowMapper();
         List<Period> period = jdbcTemplate.query(sql, rowMapper, id);
         return period;
@@ -86,7 +86,7 @@ public class PeriodService {
         String sql = "SELECT period_id, teacher_id, subject_id, period, class_code, archived FROM period "
                 + "WHERE teacher_id = ?"
                 + (archived ? " archived = true" : "")
-                + ";";
+                + " ORDER BY archived, period_id;";
         RowMapper<Period> rowMapper = new PeriodRowMapper();
         List<Period> period = jdbcTemplate.query(sql, rowMapper, id);
         return period;
@@ -94,7 +94,7 @@ public class PeriodService {
 
     public List<Period> getByStudentId(long id) {
         String sql = "SELECT period_id, teacher_id, subject_id, period, class_code, archived "
-                + "FROM period JOIN enrollment ON period.period_id = enrollment.period_id " + "WHERE student_id = ?;";
+                + "FROM period JOIN enrollment ON period.period_id = enrollment.period_id " + "WHERE student_id = ? ORDER BY archived, period_id;";
         RowMapper<Period> rowMapper = new PeriodRowMapper();
         List<Period> period = jdbcTemplate.query(sql, rowMapper, id);
         return period;
@@ -103,7 +103,7 @@ public class PeriodService {
     public List<Period> getByStudentId(long id, boolean archived) {
         String sql = "SELECT period_id, teacher_id, subject_id, period, class_code, archived "
                 + "FROM period JOIN enrollment ON period.period_id = enrollment.period_id " + "WHERE student_id = ?"
-                + (archived ? "" : " AND archived = false") + ";";
+                + (archived ? "" : " AND archived = false") + " ORDER BY archived, period_id;";
         RowMapper<Period> rowMapper = new PeriodRowMapper();
         List<Period> period = jdbcTemplate.query(sql, rowMapper, id);
         return period;
