@@ -1,4 +1,4 @@
-package dev.mentalspace.wafflecone.assignmentEntryShortcut;
+package dev.mentalspace.wafflecone.assignmentType;
 
 import dev.mentalspace.wafflecone.Utils;
 import dev.mentalspace.wafflecone.WaffleConeController;
@@ -33,14 +33,14 @@ import org.springframework.web.client.HttpClientErrorException.NotFound;
 import dev.mentalspace.wafflecone.user.*;
 
 @RestController
-@RequestMapping(path = { "/api/v0/assignmentEntryShortcut" })
-public class AssignmentEntryShortcutController {
+@RequestMapping(path = { "/api/v0/assignmentType" })
+public class AssignmentTypeController {
     @Autowired
     UserService userService;
     @Autowired
     AuthTokenService authTokenService;
     @Autowired
-    AssignmentEntryShortcutService assignmentEntryShortcutService;
+    AssignmentTypeService assignmentEntryShortcutService;
 
     @GetMapping(path = "")
     public ResponseEntity<String> getAssignmentEntryShortcut(
@@ -63,7 +63,7 @@ public class AssignmentEntryShortcutController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
         }
 
-        AssignmentEntryShortcut assignmentEntryShortcut = assignmentEntryShortcutService.getById(assignmentEntryShortcutId);
+        AssignmentType assignmentEntryShortcut = assignmentEntryShortcutService.getById(assignmentEntryShortcutId);
 
         if (loggedInUser.teacherId != assignmentEntryShortcut.teacherId) {
             JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);
@@ -77,7 +77,7 @@ public class AssignmentEntryShortcutController {
     @PostMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<String> createAssignmentEntryShortcut(
         @RequestHeader("Authorization") String authApiKey,
-        @RequestBody AssignmentEntryShortcut createAssignmentEntryShortcut
+        @RequestBody AssignmentType createAssignmentEntryShortcut
     ) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
@@ -109,7 +109,7 @@ public class AssignmentEntryShortcutController {
     @PatchMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<String> patchAssignmentEntryShortcut(
         @RequestHeader("Authorization") String authApiKey,
-        @RequestBody AssignmentEntryShortcut patchDetails) {
+        @RequestBody AssignmentType patchDetails) {
         
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
@@ -128,7 +128,7 @@ public class AssignmentEntryShortcutController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
         }
 
-        AssignmentEntryShortcut assignmentEntryShortcut = assignmentEntryShortcutService.getById(patchDetails.assignmentEntryShortcutId);
+        AssignmentType assignmentEntryShortcut = assignmentEntryShortcutService.getById(patchDetails.assignmentEntryShortcutId);
 
         if (loggedInUser.teacherId != assignmentEntryShortcut.teacherId) {
             JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);
@@ -163,7 +163,7 @@ public class AssignmentEntryShortcutController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
         }
 
-        AssignmentEntryShortcut dbShortcut = assignmentEntryShortcutService.getById(deleteId);
+        AssignmentType dbShortcut = assignmentEntryShortcutService.getById(deleteId);
 
         if (loggedInUser.teacherId != dbShortcut.teacherId) {
             JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);

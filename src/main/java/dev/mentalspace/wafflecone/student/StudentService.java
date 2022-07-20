@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -34,6 +35,13 @@ public class StudentService {
 		RowMapper<Student> rowMapper = new StudentRowMapper();
 		Student student = jdbcTemplate.queryForObject(sql, rowMapper, id);
 		return student;
+	}
+
+	public List<Student> getByPeriodId(Long id) {
+		String sql = "SELECT student_id, canonical_id, first_name, last_name, phone, grade FROM student JOIN enrollment ON student.student_id = enrollment.student_id WHERE enrollment.period_id = ?;";
+		RowMapper<Student> rowMapper = new StudentRowMapper();
+		List<Student> students = jdbcTemplate.query(sql, rowMapper, id);
+		return students;
 	}
 
 	public boolean existsById(long id) {

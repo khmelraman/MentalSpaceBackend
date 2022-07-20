@@ -3,7 +3,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.spel.ast.Assign;
@@ -23,6 +25,15 @@ import dev.mentalspace.wafflecone.databaseobject.Preference;
 public class TodoService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    public List<Todo> getByIdList(List<Long> id) {
+        String sql = "SELECT todo_id, work_id, date, planned_time, projected_start_time, priority FROM todo "
+                + "WHERE todo_id IN (:ids);";
+        RowMapper<Todo> rowMapper = new TodoRowMapper();
+        Map idsMap = Collections.singletonMap("ids", id);
+        List<Todo> todos = jdbcTemplate.query(sql, rowMapper, idsMap);
+        return todos;
+    }
 
     public boolean existsById(Long id) {
 		String sql = "SELECT COUNT(*) FROM todo WHERE todo_id = ?;";

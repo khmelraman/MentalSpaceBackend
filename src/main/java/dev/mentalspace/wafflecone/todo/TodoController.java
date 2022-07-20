@@ -38,6 +38,7 @@ import dev.mentalspace.wafflecone.response.Response;
 import dev.mentalspace.wafflecone.user.User;
 import dev.mentalspace.wafflecone.user.UserService;
 import dev.mentalspace.wafflecone.user.UserType;
+import dev.mentalspace.wafflecone.work.Work;
 import dev.mentalspace.wafflecone.work.WorkService;
 
 @RestController
@@ -56,7 +57,7 @@ public class TodoController {
     @Autowired
     PreferenceService preferenceService;
     
-    @GetMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    @GetMapping(path = "")
 	public ResponseEntity<String> getTodo(
 		@RequestHeader("Authorization") String authApiKey, 
             @RequestParam(value = "todoId", defaultValue = "-1") Long searchTodoId) {
@@ -155,10 +156,10 @@ public class TodoController {
         return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
     }
 
-    @DeleteMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    @DeleteMapping(path = "")
     public ResponseEntity<String> deleteTodo(
     	@RequestHeader("Authorization") String authApiKey, 
-        @RequestParam(value = "todoId", defaultValue = "-1") Long deleteTodoId) {
+        @RequestParam(value = "todoId", defaultValue = "[]") List<Long> deleteTodoIds) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
             JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -171,17 +172,24 @@ public class TodoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
         }
 
-        if (!todoService.existsById(deleteTodoId)) {
+        List<Todo> deleteTodos = todoService.getByIdList(deleteTodoIds);
+        List<Work> works = workService.getByTodoIdList(deleteTodoIds);
+
+        if (deleteTodos.size() < deleteTodoIds.size()) {
             JSONObject errors = new JSONObject().put("todoId", ErrorString.INVALID_ID);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
         }
 	
-        if (loggedInUser.studentId != workService.getById(deleteTodoId).studentId) {
-            JSONObject errors = new JSONObject().put("studentId", ErrorString.PERMISSION_ERROR);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+        for (int i = 0; i < works.size(); i++) {
+            if (loggedInUser.studentId != works.get(i).studentId) {
+                JSONObject errors = new JSONObject().put("studentId", ErrorString.PERMISSION_ERROR);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+            }
         }
 
-        todoService.deleteTodoById(deleteTodoId);
+        for (int i = 0; i < deleteTodoIds.size(); i++) {
+            todoService.deleteTodoById(deleteTodoIds.get(i));
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
     }

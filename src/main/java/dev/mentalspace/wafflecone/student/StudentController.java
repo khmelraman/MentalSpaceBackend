@@ -85,6 +85,9 @@ public class StudentController {
 
 		// insert into db
 		studentService.add(registerStudentDetails);
+		Preference preference = new Preference();
+		preference.studentId = registerStudentDetails.studentId;
+		preferenceService.addPreference(preference);
 		userService.updateStudent(loggedInUser, registerStudentDetails);
 
 		return ResponseEntity.status(HttpStatus.OK)
@@ -231,9 +234,13 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
 		}
 
-
 		//TODO: debate on letting teachers see student preference
 		studentId = loggedInUser.studentId;
+
+		if (!preferenceService.existsByStudentId(studentId)) {
+			JSONObject errors = new JSONObject().put("studentId", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
+		}
 
 		Preference preference = preferenceService.getByStudentId(studentId);
 		Response response = new Response().put("preference", preference.toJsonObject());
@@ -254,6 +261,11 @@ public class StudentController {
 		if (loggedInUser.type != UserType.STUDENT) {
 			JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+		}
+
+		if (!preferenceService.existsByStudentId(loggedInUser.studentId)) {
+			JSONObject errors = new JSONObject().put("studentId", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
 		}
 
         Preference preference = preferenceService.getByStudentId(loggedInUser.studentId);

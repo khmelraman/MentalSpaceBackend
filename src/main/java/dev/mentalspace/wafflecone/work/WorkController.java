@@ -193,7 +193,7 @@ public class WorkController {
     @DeleteMapping(path = { "" })
     public ResponseEntity<String> deleteWork(
     	@RequestHeader("Authorization") String authApiKey, 
-    	@RequestParam(value = "workId", defaultValue = "-1") Long deleteWorkId) {
+    	@RequestParam(value = "workId", defaultValue = "[]") List<Long> deleteWorkIds) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
             JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -206,19 +206,23 @@ public class WorkController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
         }
 
-        if (!workService.existsById(deleteWorkId)) {
+        List<Work> deleteWorks = workService.getByIdList(deleteWorkIds);
+
+        if (deleteWorks.size() < deleteWorkIds.size()) {
             JSONObject errors = new JSONObject().put("todoId", ErrorString.INVALID_ID);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
         }
 
-        Work work = workService.getById(deleteWorkId);
-
-        if (loggedInUser.studentId != work.studentId) {
-            JSONObject errors = new JSONObject().put("studentId", ErrorString.PERMISSION_ERROR);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+        for (int i = 0; i < deleteWorkIds.size(); i++) {
+            if (loggedInUser.studentId != deleteWorks.get(i).studentId) {
+                JSONObject errors = new JSONObject().put("studentId", ErrorString.PERMISSION_ERROR);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+            }
         }
 
-        workService.deleteWork(work);
+        for (int i = 0; i < deleteWorkIds.size(); i++) {
+            workService.deleteWork(deleteWorks.get(i));
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
     }

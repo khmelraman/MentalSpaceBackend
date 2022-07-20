@@ -2,6 +2,7 @@ package dev.mentalspace.wafflecone.teacher;
 
 import dev.mentalspace.wafflecone.Utils;
 import dev.mentalspace.wafflecone.WaffleConeController;
+import dev.mentalspace.wafflecone.assignmentType.*;
 import dev.mentalspace.wafflecone.auth.AuthToken;
 import dev.mentalspace.wafflecone.auth.AuthScope;
 import dev.mentalspace.wafflecone.auth.AuthTokenService;
@@ -33,7 +34,6 @@ import dev.mentalspace.wafflecone.response.Response;
 import dev.mentalspace.wafflecone.user.User;
 import dev.mentalspace.wafflecone.user.UserService;
 import dev.mentalspace.wafflecone.user.UserType;
-import dev.mentalspace.wafflecone.assignmentEntryShortcut.*;
 
 @RestController
 @RequestMapping(path = { "/api/v0/teacher" })
@@ -47,7 +47,7 @@ public class TeacherController {
 	@Autowired
 	PeriodService periodService;
 	@Autowired
-	AssignmentEntryShortcutService assignmentEntryShortcutService;
+	AssignmentTypeService assignmentEntryShortcutService;
 
 	@PostMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<String> registerTeacher(@RequestHeader("Authorization") String authApiKey,
@@ -178,7 +178,7 @@ public class TeacherController {
 		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 	}
 
-	@GetMapping("/assignmentEntryShortcut")
+	@GetMapping("/assignmentType")
 	public ResponseEntity<String> teacherShortcuts(@RequestHeader("Authorization") String authApiKey,
 			@RequestParam(value = "teacherId", defaultValue = "-1") long teacherId) {
 		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
@@ -201,7 +201,7 @@ public class TeacherController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
 		}
 
-		List<AssignmentEntryShortcut> assignmentEntryShortcuts = assignmentEntryShortcutService.getByTeacherId(teacherId);
+		List<AssignmentType> assignmentEntryShortcuts = assignmentEntryShortcutService.getByTeacherId(teacherId);
 		Response response = new Response("success").put("assignmentEntryShortcuts", assignmentEntryShortcuts);
 		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
 	}

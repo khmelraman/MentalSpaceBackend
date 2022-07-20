@@ -40,6 +40,7 @@ import dev.mentalspace.wafflecone.teacher.Teacher;
 import dev.mentalspace.wafflecone.user.User;
 import dev.mentalspace.wafflecone.user.UserService;
 import dev.mentalspace.wafflecone.user.UserType;
+import dev.mentalspace.wafflecone.student.*;
 
 @RestController
 @RequestMapping(path = { "/api/v0/class" })
@@ -58,6 +59,8 @@ public class PeriodController {
     SubjectService subjectService;
     @Autowired
     AssignmentService assignmentService;
+    @Autowired
+    StudentService studentService;
 
     @PostMapping(path = { "" }, consumes = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<String> createPeriod(@RequestHeader("Authorization") String authApiKey,
@@ -105,6 +108,7 @@ public class PeriodController {
         }
         User loggedInUser = userService.getById(authToken.userId);
 
+        // interesting, if (!periodService.existsById(searchPeriodId)) {...} will do the same check, bc if searchid <= 0, then existsbyid = false
         if (searchPeriodId <= 0) {
             JSONObject errors = new JSONObject().put("classId", ErrorString.INVALID_ID);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
@@ -160,6 +164,15 @@ public class PeriodController {
         }
         
         Period period = periodService.getById(patchDetails.periodId);
+
+        if (loggedInUser.type != UserType.TEACHER) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+        }
+        if (period.teacherId != loggedInUser.teacherId) {
+            JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+        }
 
         period.updateDetails(patchDetails);
         if (patchDetails.regenerateClassCode) {
@@ -265,20 +278,35 @@ public class PeriodController {
         }
         User loggedInUser = userService.getById(authToken.userId);
 
-        // Debate on letting students see this resource
-        if(loggedInUser.type == UserType.STUDENT){
-            JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
-        }
+        // they literally see all of them during school
+        // // Debate on letting students see this resource
+        // if(loggedInUser.type == UserType.STUDENT){
+        //     JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
+        //     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        // }
 
         if (!periodService.existsById(searchPeriodId)) {
             JSONObject errors = new JSONObject().put("classId", ErrorString.INVALID_ID);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
         }
-        
-        Period periods = periodService.getBySubjectId(searchPeriodId);
 
-        Response response = new Response("success").put("students", periods.toJsonObject());
+        if (loggedInUser.type == UserType.STUDENT) {
+            if (enrollmentService.isEnrolled(loggedInUser.studentId, searchPeriodId)) {
+                JSONObject errors = new JSONObject().put("classId", ErrorString.INVALID_ID);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+            }
+        }
+
+        if (loggedInUser.type == UserType.TEACHER) {
+            if (!periodService.isTeacher(loggedInUser.teacherId, searchPeriodId)) {
+                JSONObject errors = new JSONObject().put("classId", ErrorString.OWNERSHIP);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
+            }
+        }
+        
+        List<Student> students = studentService.getByPeriodId(searchPeriodId);
+
+        Response response = new Response("success").put("students", students);
         return ResponseEntity.status(HttpStatus.OK).body(response.toString());
     }
 

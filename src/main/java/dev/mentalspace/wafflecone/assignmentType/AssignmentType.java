@@ -1,5 +1,5 @@
 
-package dev.mentalspace.wafflecone.assignmentEntryShortcut;
+package dev.mentalspace.wafflecone.assignmentType;
 
 import org.json.JSONObject;
 
@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import dev.mentalspace.wafflecone.Utils;
 
-public class AssignmentEntryShortcut {
+public class AssignmentType {
     public Long assignmentEntryShortcutId;
     public Long teacherId;
     public String value;

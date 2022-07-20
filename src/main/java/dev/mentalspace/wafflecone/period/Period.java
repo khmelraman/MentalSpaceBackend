@@ -2,9 +2,12 @@ package dev.mentalspace.wafflecone.period;
 
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import dev.mentalspace.wafflecone.Utils;
 
 public class Period {
+    @JsonProperty("classId")
     public Long periodId;
     public Long teacherId;
     public Long subjectId;

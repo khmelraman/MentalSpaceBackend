@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -25,6 +27,24 @@ import dev.mentalspace.wafflecone.databaseobject.Enrollment;
 public class WorkService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    public List<Work> getByIdList(List<Long> id) {
+        String sql = "SELECT work_id, student_id, assignment_id, remaining_time, priority FROM work "
+                + "WHERE work_id IN (:ids);";
+        RowMapper<Work> rowMapper = new WorkRowMapper();
+        Map idsMap = Collections.singletonMap("ids", id);
+        List<Work> works = jdbcTemplate.query(sql, rowMapper, idsMap);
+        return works;
+    }
+
+    public List<Work> getByTodoIdList(List<Long> id) {
+        String sql = "SELECT work_id, student_id, assignment_id, remaining_time, priority FROM work "
+                + "WHERE todo_id IN (:ids);";
+        RowMapper<Work> rowMapper = new WorkRowMapper();
+        Map idsMap = Collections.singletonMap("ids", id);
+        List<Work> todos = jdbcTemplate.query(sql, rowMapper, idsMap);
+        return todos;
+    }
 
     public boolean existsById(Long id) {
 		String sql = "SELECT COUNT(*) FROM work WHERE work_id = ?;";

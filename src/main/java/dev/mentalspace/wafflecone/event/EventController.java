@@ -42,7 +42,7 @@ public class EventController {
     @GetMapping(path = "")
     public ResponseEntity<String> getEvent(
         @RequestHeader("Authorization") String authApiKey, 
-        @RequestParam(value = "todoId", defaultValue = "-1") Long searchEventId) {
+        @RequestParam(value = "eventId", defaultValue = "-1") Long searchEventId) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
             JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);

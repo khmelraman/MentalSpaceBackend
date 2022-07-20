@@ -29,6 +29,13 @@ public class PreferenceService {
         return preference;
     }
 
+    public boolean existsByStudentId(long id) {
+        String sql = "SELECT count(*) "
+                + "FROM preference WHERE student_id = ?;";
+        Integer i = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return (i > 0);
+    }
+
     public Preference getByStudentId(long id) {
         String sql = "SELECT preference_id, student_id, assignment_order, start_type, break_length, break_frequency "
                 + "FROM preference WHERE student_id = ?;";
