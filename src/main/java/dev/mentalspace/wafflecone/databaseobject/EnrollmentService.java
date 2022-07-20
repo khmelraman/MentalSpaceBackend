@@ -4,8 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-//import java.util.List;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -22,6 +23,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class EnrollmentService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    
+    public int studentByIdListInClass(List<Long> students, long period) {
+        String sql = "SELECT count(*) FROM enrollment WHERE student_id IN (:ids) AND period_id = ?;";
+        Map idsMap = Collections.singletonMap("ids", students);
+        Integer i = jdbcTemplate.queryForObject(sql, Integer.class, idsMap, period);
+        return i;
+    }
+
+    public Enrollment getByStudentAndPeriodId(long student, long period) {
+        String sql = "SELECT enrollment_id, student_id, period_id, student_preference FROM enrollment "
+            + "WHERE student_id = ? AND period_id = ?;";
+        RowMapper<Enrollment> rowMapper = new EnrollmentRowMapper();
+        Enrollment enrollment = jdbcTemplate.queryForObject(sql, rowMapper, student, period);
+        return enrollment;
+    }
 
     public Enrollment getById(long id) {
         String sql = "SELECT enrollment_id, student_id, period_id, student_preference FROM enrollment "
@@ -32,10 +48,18 @@ public class EnrollmentService {
     }
 
     public List<Enrollment> getEnrollmentsByPeriodId(long periodId) {
-        String sql = "SELECT work_id, student_id, assignment_id, remaining_time, priority FROM work "
-                + "WHERE assignment_id = ? ORDER BY priority;";
+        String sql = "SELECT enrollment_id, student_id, period_id, student_preference FROM enrollment "
+                + "WHERE period_id = ?;";
         RowMapper<Enrollment> rowMapper = new EnrollmentRowMapper();
         List<Enrollment> enrollments = jdbcTemplate.query(sql, rowMapper, periodId);
+        return enrollments;
+    }
+
+    public List<Enrollment> getEnrollmentsByStudentId(long studentId) {
+        String sql = "SELECT enrollment_id, student_id, period_id, student_preference FROM enrollment "
+                + "WHERE student_id = ?;";
+        RowMapper<Enrollment> rowMapper = new EnrollmentRowMapper();
+        List<Enrollment> enrollments = jdbcTemplate.query(sql, rowMapper, studentId);
         return enrollments;
     }
 
@@ -109,6 +133,25 @@ public class EnrollmentService {
             }
         );
         return addCounts;
+    }
+
+    public void kickByStudentIdListAndPeriodId(List<Long> students, long period) {
+        String sql = "DELETE FROM enrollment WHERE period_id = ? AND student_id IN (";
+
+        for (int i = 0; i < students.size() - 1; i++) {
+            sql = sql + Long.toString(students.get(i)) + ", ";
+        }
+        sql = sql + Long.toString(students.get(students.size() - 1)) + ");";
+
+        String newsql = sql;
+
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(newsql);
+                ps.setLong(1, period);
+                return ps;
+            }
+        });
     }
 
     public void deleteEnrollment(Enrollment enrollment) {

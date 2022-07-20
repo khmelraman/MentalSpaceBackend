@@ -83,4 +83,41 @@ public class SchoolController {
 
         return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
     }
+
+    @PatchMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<String> updateSchool(@RequestHeader("Authorization") String authApiKey, 
+        @RequestBody School school) {
+        AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+        if (!authToken.valid) {
+            JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+        }
+        User loggedInUser = userService.getById(authToken.userId);
+
+        if (loggedInUser.type != UserType.ADMIN) {
+            JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+        }
+
+        if (!schoolService.existsById(school.schoolId)) {
+            JSONObject errors = new JSONObject().put("schoolId", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
+        }
+        
+        School db = schoolService.getById(school.schoolId);
+
+        if (Utils.isEmpty(school.shortName)) {
+            school.shortName = db.shortName;
+        }
+        if (Utils.isEmpty(school.name)) {
+            school.name = db.name;
+        }
+        if (Utils.isEmpty(school.address)) {
+            school.address = db.address;
+        }
+
+        schoolService.updateSchool(school);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
+    }
 }

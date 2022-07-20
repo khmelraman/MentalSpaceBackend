@@ -27,12 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dev.mentalspace.wafflecone.response.ErrorResponse;
-import dev.mentalspace.wafflecone.response.ErrorString;
-import dev.mentalspace.wafflecone.response.Response;
-import dev.mentalspace.wafflecone.user.User;
-import dev.mentalspace.wafflecone.user.UserService;
-import dev.mentalspace.wafflecone.user.UserType;
+import dev.mentalspace.wafflecone.response.*;
+import dev.mentalspace.wafflecone.user.*;
 import dev.mentalspace.wafflecone.period.*;
 import dev.mentalspace.wafflecone.event.*;
 import dev.mentalspace.wafflecone.todo.*;
@@ -58,6 +54,8 @@ public class StudentController {
 	TodoService todoService;
 	@Autowired
 	WorkService workService;
+	@Autowired
+	EnrollmentService enrollmentService;
 
 	@PostMapping(path = "", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<String> registerStudent(@RequestHeader("Authorization") String authApiKey,
@@ -310,5 +308,58 @@ public class StudentController {
 		List<Todo> todos = todoService.getByStudentId(studentId, startDate, endDate);
 		Response response = new Response().put("todos", todos);
 		return ResponseEntity.status(HttpStatus.OK).body(response.toString());
+	}
+
+	@PatchMapping(path = "/enrollment", consumes = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<String> patchStudentClassHomeworkPreference(@RequestHeader("Authorization") String authApiKey,
+			@RequestBody Enrollment patchDetails) {
+		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+		if (!authToken.valid) {
+			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+		User loggedInUser = userService.getById(authToken.userId);
+
+		if (loggedInUser.type != UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+		}
+
+		if (!enrollmentService.isEnrolled(patchDetails.studentId, patchDetails.periodId)) {
+			JSONObject errors = new JSONObject().put("studentId", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+		}
+
+		if (patchDetails.studentPreference == null) {
+			JSONObject errors = new JSONObject().put("studentPreference", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
+		}
+
+		Enrollment dbEnrollment = enrollmentService.getByStudentAndPeriodId(patchDetails.studentId, patchDetails.periodId);
+		dbEnrollment.studentPreference = patchDetails.studentPreference;
+
+		enrollmentService.updateEnrollment(dbEnrollment);
+
+		return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
+	}
+	
+	@GetMapping(path = "/enrollment")
+	public ResponseEntity<String> patchStudentClassHomeworkPreference(@RequestHeader("Authorization") String authApiKey,
+			@RequestParam(value = "studentId", defaultValue = "-1") Long studentId) {
+		AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
+		if (!authToken.valid) {
+			JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
+		}
+		User loggedInUser = userService.getById(authToken.userId);
+
+		if (loggedInUser.type != UserType.STUDENT) {
+			JSONObject errors = new JSONObject().put("type", ErrorString.USER_TYPE);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(errors).toString());
+		}
+
+		List<Enrollment> enrollments = enrollmentService.getEnrollmentsByStudentId(studentId);
+
+		return ResponseEntity.status(HttpStatus.OK).body(new Response("success").put("enrollments", enrollments).toString());
 	}
 }

@@ -9,6 +9,8 @@ import dev.mentalspace.wafflecone.auth.RefreshToken;
 import dev.mentalspace.wafflecone.auth.RefreshTokenService;
 import dev.mentalspace.wafflecone.databaseobject.EnrollmentService;
 
+import java.util.List;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -155,5 +157,12 @@ public class SubjectController {
 		subjectService.deleteSubjectById(subjectId);
 
 		return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
+	}
+
+	@GetMapping("/all")
+	public ResponseEntity<String> getAllSubjects() {
+		List<Subject> subjects = subjectService.getAll();
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(new Response("success").put("subject", subjects).toString());
 	}
 }

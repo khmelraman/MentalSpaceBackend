@@ -309,11 +309,12 @@ public class PeriodController {
         return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
         // TODO: Debate on implementing allowing admin/teachers to add students
     }
-
-    @PostMapping(path = "/kick", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    
+    @DeleteMapping(path = "/kick")
     public ResponseEntity<String> kickStudent(
         @RequestHeader("Authorization") String authApiKey,
-        @RequestBody Enrollment kickStudent) {
+        @RequestParam(value = "studentIds") List<Long> kickStudent,
+        @RequestParam(value = "periodId" ) Long kickPeriod) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
             JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -325,12 +326,18 @@ public class PeriodController {
             JSONObject errors = new JSONObject().put("user", ErrorString.USER_TYPE);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
         }
-        if (periodService.getById(kickStudent.periodId).teacherId != loggedInUser.teacherId) {
-            JSONObject errors = new JSONObject().put("user", ErrorString.OWNERSHIP);
+
+        if (periodService.getById(kickPeriod).teacherId != loggedInUser.teacherId) {
+            JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
         }
 
-        enrollmentService.kickStudents(kickStudent);
+        if (kickStudent.size() != enrollmentService.studentByIdListInClass(kickStudent, kickPeriod)) {
+            JSONObject errors = new JSONObject().put("studentIds", ErrorString.INVALID_ID);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(errors).toString());
+        }
+
+        enrollmentService.kickByStudentIdListAndPeriodId(kickStudent, kickPeriod);
         
         return ResponseEntity.status(HttpStatus.OK).body(new Response("success").toString());
     }

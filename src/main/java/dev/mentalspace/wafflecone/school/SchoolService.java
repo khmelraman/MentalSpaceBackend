@@ -15,8 +15,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import dev.mentalspace.wafflecone.todo.TodoRowMapper;
-
 @Transactional
 @Repository
 public class SchoolService {

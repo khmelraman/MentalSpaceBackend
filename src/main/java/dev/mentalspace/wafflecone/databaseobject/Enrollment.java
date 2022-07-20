@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Enrollment {
     public Long enrollmentId;
     public Long studentId;
+    @JsonProperty("classId")
     public Long periodId;
     public Integer studentPreference;
 

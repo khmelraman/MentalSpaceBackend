@@ -55,7 +55,7 @@ public class AssignmentController {
     PeriodService periodService;
 
     @GetMapping(path = "")
-    public ResponseEntity<String> getTodo(
+    public ResponseEntity<String> getAssignment(
     	@RequestHeader("Authorization") String authApiKey, 
     	@RequestParam(value = "assignment", defaultValue = "-1") Long searchAssignmentId) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
