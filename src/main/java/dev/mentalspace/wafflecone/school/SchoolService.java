@@ -51,7 +51,7 @@ public class SchoolService {
     }
 
     public List<School> allSchool() {
-        String sql = "SELECT school_id, short_name, name, address FROM school;";
+        String sql = "SELECT school_id, short_name, name, address FROM school ORDER BY short_name;";
         RowMapper<School> rowMapper = new SchoolRowMapper();
         List<School> schools = jdbcTemplate.query(sql, rowMapper);
         return schools;

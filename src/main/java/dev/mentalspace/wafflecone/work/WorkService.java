@@ -30,7 +30,7 @@ public class WorkService {
 
     public List<Work> getByIdList(List<Long> id) {
         String sql = "SELECT work_id, student_id, assignment_id, remaining_time, priority FROM work "
-                + "WHERE work_id IN (:ids);";
+                + "WHERE work_id IN (:ids) ORDER BY remaining_time DESC;";
         RowMapper<Work> rowMapper = new WorkRowMapper();
         Map idsMap = Collections.singletonMap("ids", id);
         List<Work> works = jdbcTemplate.query(sql, rowMapper, idsMap);
@@ -39,7 +39,7 @@ public class WorkService {
 
     public List<Work> getByTodoIdList(List<Long> id) {
         String sql = "SELECT work_id, student_id, assignment_id, remaining_time, priority FROM work "
-                + "WHERE todo_id IN (:ids);";
+                + "WHERE todo_id IN (:ids) ORDER BY remaining_time DESC;";
         RowMapper<Work> rowMapper = new WorkRowMapper();
         Map idsMap = Collections.singletonMap("ids", id);
         List<Work> todos = jdbcTemplate.query(sql, rowMapper, idsMap);
@@ -104,7 +104,7 @@ public class WorkService {
 
     public void updateWork(Work work) {
         String sql = "UPDATE work SET student_id = ?, assignment_id = ?, remaining_time = ?, priority = ? "
-                + "WHERE assignment_id = ?;";
+                + "WHERE work_id = ?;";
         jdbcTemplate.update(new PreparedStatementCreator() {
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(sql);
@@ -113,6 +113,61 @@ public class WorkService {
                 ps.setLong(3, work.remainingTime);
                 ps.setInt(4, work.priority);
                 ps.setLong(5, work.workId);
+                return ps;
+            }
+        });
+    }
+
+    public void updateWorkRemainingTime(long id, long time) {
+        String sql = "UPDATE work SET remaining_time = ? "
+                + "WHERE work_id = ?;";
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setLong(1, time);
+                ps.setLong(2, id);
+                return ps;
+            }
+        });
+    }
+
+    public void updateWorkRemainingTimeByIncreasing(long id, long time) {
+        String sql = "UPDATE work SET remaining_time = ((SELECT remaining_time FROM work WHERE work_id = ?) + ?)) "
+                + "WHERE work_id = ?;";
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setLong(1, id);
+                ps.setLong(2, time);
+                ps.setLong(2, id);
+                return ps;
+            }
+        });
+    }
+
+    public void updateWorkRemainingTimeUponTodoDeletion(long workId, long todoId) {
+        String sql = "UPDATE work SET remaining_time = ((SELECT remaining_time FROM work WHERE work_id = ?) + (SELECT planned_time FROM todo WHERE todo_id = ?)))) "
+                + "WHERE work_id = ?;";
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setLong(1, workId);
+                ps.setLong(2, todoId);
+                ps.setLong(2, workId);
+                return ps;
+            }
+        });
+    }
+
+    public void updateWorkRemainingTimeUponTodoAddition(long workId, long todoId) {
+        String sql = "UPDATE work SET remaining_time = ((SELECT remaining_time FROM work WHERE work_id = ?) - (SELECT planned_time FROM todo WHERE todo_id = ?)))) "
+                + "WHERE work_id = ?;";
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setLong(1, workId);
+                ps.setLong(2, todoId);
+                ps.setLong(2, workId);
                 return ps;
             }
         });

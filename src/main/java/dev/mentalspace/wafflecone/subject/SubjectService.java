@@ -29,7 +29,7 @@ public class SubjectService {
     }
 
     public List<Subject> getAll() {
-        String sql = "SELECT subject_id, department, description, name FROM subject ORDER BY department;";
+        String sql = "SELECT subject_id, department, description, name FROM subject ORDER BY department ORDER BY department, name;";
         RowMapper<Subject> rowMapper = new SubjectRowMapper();
         List<Subject> subjects = jdbcTemplate.query(sql, rowMapper);
         return subjects;

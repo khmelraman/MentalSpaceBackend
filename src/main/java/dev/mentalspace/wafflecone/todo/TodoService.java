@@ -19,16 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dev.mentalspace.wafflecone.databaseobject.AssignmentOrder;
 import dev.mentalspace.wafflecone.databaseobject.Preference;
+import dev.mentalspace.wafflecone.work.*;
 
 @Transactional
 @Repository
 public class TodoService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    WorkService workService;
 
     public List<Todo> getByIdList(List<Long> id) {
         String sql = "SELECT todo_id, work_id, date, planned_time, projected_start_time, priority FROM todo "
-                + "WHERE todo_id IN (:ids);";
+                + "WHERE todo_id IN (:ids) ORDER BY priority;";
         RowMapper<Todo> rowMapper = new TodoRowMapper();
         Map idsMap = Collections.singletonMap("ids", id);
         List<Todo> todos = jdbcTemplate.query(sql, rowMapper, idsMap);
@@ -108,12 +111,15 @@ public class TodoService {
         }, keyHolder);
 
         todo.todoId = keyHolder.getKey().longValue();
+
+        workService.updateWorkRemainingTimeUponTodoAddition(todo.workId, todo.todoId);
     }
 
     public void updateTodo(Todo todo) {
         String sql = "UPDATE todo SET "
                 + "work_id = ?, date = ?, date_due = ?, planned_time = ?, projected_start_time = ?, priority = ? "
                 + "WHERE todo_id = ?;";
+        workService.updateWorkRemainingTimeUponTodoDeletion(todo.workId, todo.todoId);
         jdbcTemplate.update(new PreparedStatementCreator() {
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(sql);
@@ -126,6 +132,7 @@ public class TodoService {
                 return ps;
             }
         });
+        workService.updateWorkRemainingTimeUponTodoAddition(todo.workId, todo.todoId);
     }
 
     public void deleteTodoById(long todoId) {
@@ -141,6 +148,7 @@ public class TodoService {
     
     public void deleteTodo(Todo todo) {
     	deleteTodoById(todo.todoId);
+        workService.updateWorkRemainingTimeUponTodoDeletion(todo.workId, todo.todoId);
 	}
 
     public void assignPriority(long id, Preference preference) {
