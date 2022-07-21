@@ -87,6 +87,8 @@ public class StudentController {
 		studentService.add(registerStudentDetails);
 		Preference preference = new Preference();
 		preference.studentId = registerStudentDetails.studentId;
+		preference.assignmentOrder = AssignmentOrder.SHORT_JOB_FIRST;
+		preference.startType = StartType.AS_SOON_AS_POSSIBLE;
 		preferenceService.addPreference(preference);
 		userService.updateStudent(loggedInUser, registerStudentDetails);
 
