@@ -42,7 +42,7 @@ public class Assignment {
         JSONObject jsonObject = new JSONObject();
         jsonObject
             .put("assignmentId",       this.assignmentId)
-            .put("periodId",           this.periodId)
+            .put("classId",            this.periodId)
             .put("dateAssigned",       this.dateAssigned)
             .put("dateDue",            this.dateDue)
             .put("type",               this.type)
@@ -55,7 +55,7 @@ public class Assignment {
     public JSONObject toJsonObject(JSONObject jsonObject) {
         jsonObject
             .put("assignmentId",       this.assignmentId)
-            .put("periodId",           this.periodId)
+            .put("classId",            this.periodId)
             .put("dateAssigned",       this.dateAssigned)
             .put("dateDue",            this.dateDue)
             .put("type",               this.type)
