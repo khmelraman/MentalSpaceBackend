@@ -45,7 +45,7 @@ public class AssignmentTypeController {
     @GetMapping(path = "")
     public ResponseEntity<String> getAssignmentEntryShortcut(
         @RequestHeader("Authorization") String authApiKey, 
-        @RequestParam(value = "assignmentEntryShortcutId", defaultValue = "-1") Long assignmentEntryShortcutId) {
+        @RequestParam(value = "assignmentTypeId", defaultValue = "-1") Long assignmentTypeId) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
             JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -58,12 +58,12 @@ public class AssignmentTypeController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
         }
 
-        if (!assignmentEntryShortcutService.existsById(assignmentEntryShortcutId)) {
-            JSONObject errors = new JSONObject().put("assignmentEntryShortcutId", ErrorString.INVALID_ID);
+        if (!assignmentEntryShortcutService.existsById(assignmentTypeId)) {
+            JSONObject errors = new JSONObject().put("assignmentTypeId", ErrorString.INVALID_ID);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
         }
 
-        AssignmentType assignmentEntryShortcut = assignmentEntryShortcutService.getById(assignmentEntryShortcutId);
+        AssignmentType assignmentEntryShortcut = assignmentEntryShortcutService.getById(assignmentTypeId);
 
         if (loggedInUser.teacherId != assignmentEntryShortcut.teacherId) {
             JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);
@@ -123,12 +123,12 @@ public class AssignmentTypeController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(errors).toString());
         }
         
-        if (!assignmentEntryShortcutService.existsById(patchDetails.assignmentEntryShortcutId)) {
-            JSONObject errors = new JSONObject().put("assignmentEntryShortcutId", ErrorString.INVALID_ID);
+        if (!assignmentEntryShortcutService.existsById(patchDetails.assignmentTypeId)) {
+            JSONObject errors = new JSONObject().put("assignmentTypeId", ErrorString.INVALID_ID);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
         }
 
-        AssignmentType assignmentEntryShortcut = assignmentEntryShortcutService.getById(patchDetails.assignmentEntryShortcutId);
+        AssignmentType assignmentEntryShortcut = assignmentEntryShortcutService.getById(patchDetails.assignmentTypeId);
 
         if (loggedInUser.teacherId != assignmentEntryShortcut.teacherId) {
             JSONObject errors = new JSONObject().put("teacherId", ErrorString.OWNERSHIP);
@@ -145,7 +145,7 @@ public class AssignmentTypeController {
     @DeleteMapping(path = "")
     public ResponseEntity<String> deleteAssignment(
         @RequestHeader("Authorization") String authApiKey,
-        @RequestParam(value = "assignmentEntryShortcutId", defaultValue = "-1") Long deleteId) {
+        @RequestParam(value = "assignmentTypeId", defaultValue = "-1") Long deleteId) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
             JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
@@ -159,7 +159,7 @@ public class AssignmentTypeController {
         }
         
         if (!assignmentEntryShortcutService.existsById(deleteId)) {
-            JSONObject errors = new JSONObject().put("assignmentEntryShortcutId", ErrorString.INVALID_ID);
+            JSONObject errors = new JSONObject().put("assignmentTypeId", ErrorString.INVALID_ID);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(errors).toString());
         }
 
