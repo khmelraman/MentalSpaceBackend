@@ -56,7 +56,7 @@ public class AssignmentTypeService {
             }
         }, keyHolder);
 
-        assignmentEntryShortcut.assignmentEntryShortcutId = keyHolder.getKey().longValue();
+        assignmentEntryShortcut.assignmentTypeId = keyHolder.getKey().longValue();
     }
 
     public void updateAssignmentEntryShortcut(AssignmentType assignmentEntryShortcut) {
@@ -68,7 +68,7 @@ public class AssignmentTypeService {
                 PreparedStatement ps = connection.prepareStatement(sql);
                 ps.setLong  (1, assignmentEntryShortcut.teacherId);
                 ps.setString(2, assignmentEntryShortcut.value);
-                ps.setLong  (3, assignmentEntryShortcut.assignmentEntryShortcutId);
+                ps.setLong  (3, assignmentEntryShortcut.assignmentTypeId);
                 return ps;
             }
         });
@@ -79,7 +79,7 @@ public class AssignmentTypeService {
         jdbcTemplate.update(new PreparedStatementCreator() {
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(sql);
-                ps.setLong(1, assignmentEntryShortcut.assignmentEntryShortcutId);
+                ps.setLong(1, assignmentEntryShortcut.assignmentTypeId);
                 return ps;
             }
         });
