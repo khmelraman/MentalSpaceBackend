@@ -341,8 +341,8 @@ public class PeriodController {
     @DeleteMapping(path = "/kick")
     public ResponseEntity<String> kickStudent(
         @RequestHeader("Authorization") String authApiKey,
-        @RequestParam(value = "studentIds") List<Long> kickStudent,
-        @RequestParam(value = "periodId" ) Long kickPeriod) {
+        @RequestParam(value = "studentId") List<Long> kickStudent,
+        @RequestParam(value = "classId" ) Long kickPeriod) {
         AuthToken authToken = authTokenService.verifyBearerKey(authApiKey);
         if (!authToken.valid) {
             JSONObject errors = new JSONObject().put("accessToken", ErrorString.INVALID_ACCESS_TOKEN);
