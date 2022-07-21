@@ -67,8 +67,8 @@ public class SubjectService {
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
                 PreparedStatement ps = connection.prepareStatement(sql);
                 ps.setString(1, subject.department);
-                ps.setString(2, subject.department);
-                ps.setString(3, subject.description);
+                ps.setString(2, subject.description);
+                ps.setString(3, subject.name);
                 ps.setLong(4, subject.subjectId);
                 return ps;
             }
